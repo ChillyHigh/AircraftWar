@@ -52,8 +52,8 @@ public class ImageManager {
             HERO_BULLET_IMAGE = loadFromResources("/images/bullet_hero.png");
             ENEMY_BULLET_IMAGE = loadFromResources("/images/bullet_enemy.png");
             ELITE_ENEMY_IMAGE = loadFromResources("/images/elite.png");
-            ELITE_PLUS_ENEMY_IMAGE = loadFromResources("/images/elite_plus.png");
-            ELITE_PRO_ENEMY_IMAGE = loadFromResources("/images/elite_pro.png");
+            ELITE_PLUS_ENEMY_IMAGE = loadFromResources("/images/elitePlus.png");
+            ELITE_PRO_ENEMY_IMAGE = loadFromResources("/images/elitePro.png");
             BOSS_ENEMY_IMAGE = loadFromResources("/images/boss.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
