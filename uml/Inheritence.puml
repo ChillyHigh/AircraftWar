@@ -48,15 +48,23 @@ class HeroAircraft {
 AbstractAircraft <|-- HeroAircraft
 
 class AbstractEnemy {
+    # score: int
+    # direction: int
+    # shootNum: int
+    # power: int
+    + AbstractEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward(): void
+    + shoot(): List<BaseBullet>
+    + getScore(): int
+
 }
 
+AbstractAircraft <|-- AbstractEnemy
 
 class MobEnemy {
     + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
-    + forward():void
-    + shoot():List<BaseBullet>
 }
-AbstractAircraft <|-- MobEnemy
+AbstractEnemy <|-- MobEnemy
 
 abstract class BaseBullet
 {
