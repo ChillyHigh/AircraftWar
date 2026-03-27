@@ -1,6 +1,11 @@
 package edu.hitsz.application;
 
 import edu.hitsz.aircraft.*;
+import edu.hitsz.aircraft.enemy.EliteEnemy;
+import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
+import edu.hitsz.aircraft.enemy.EliteProEnemy;
+import edu.hitsz.aircraft.enemy.BossEnemy;
+
 import edu.hitsz.aircraft.enemy.MobEnemy;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
@@ -19,13 +24,14 @@ import java.util.List;
 
 /**
  * 游戏主面板，游戏启动
+ * 
  * @author hitsz
  */
 public class Game extends Pane {
 
     private int backGroundTop = 0;
 
-    //游戏逻辑更新间隔
+    // 游戏逻辑更新间隔
     private int timeInterval = 40;
 
     private final HeroAircraft heroAircraft;
@@ -33,32 +39,32 @@ public class Game extends Pane {
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
 
-    //屏幕中出现的敌机最大数量
+    // 屏幕中出现的敌机最大数量
     private final int enemyMaxNumber = 5;
 
-    //敌机生成周期
-    protected double enemySpawnCycle  =  20;
+    // 敌机生成周期
+    protected double enemySpawnCycle = 20;
     private int enemySpawnCounter = 0;
 
-    //英雄机和敌机射击周期
+    // 英雄机和敌机射击周期
     protected double shootCycle = 20;
     private int shootCounter = 0;
 
-    //当前玩家分数
+    // 当前玩家分数
     private int score = 0;
 
-    //游戏结束标志
+    // 游戏结束标志
     private boolean gameOverFlag = false;
 
-    //画布和画笔
+    // 画布和画笔
     private final Canvas canvas;
     private final GraphicsContext gc;
 
-    //JavaFX 提供的动画定时器
+    // JavaFX 提供的动画定时器
     private AnimationTimer timer;
-    //上一帧时刻(纳秒)
+    // 上一帧时刻(纳秒)
     private long lastNanoTime = 0L;
-    //累加器，记录两帧之间经过的实际时间
+    // 累加器，记录两帧之间经过的实际时间
     private long nanoAccumulator = 0L;
 
     public Game() {
@@ -101,7 +107,7 @@ public class Game extends Pane {
                     return;
                 }
 
-                //固定时间步长
+                // 固定时间步长
                 long delta = now - lastNanoTime;
                 lastNanoTime = now;
                 nanoAccumulator += delta;
@@ -111,7 +117,7 @@ public class Game extends Pane {
                     nanoAccumulator -= stepNanos;
                     tick();
                 }
-                //重绘界面
+                // 重绘界面
                 render();
             }
         };
@@ -121,17 +127,59 @@ public class Game extends Pane {
 
     private void tick() {
         enemySpawnCounter++;
-        if (enemySpawnCounter >=enemySpawnCycle) {
+        if (enemySpawnCounter >= enemySpawnCycle) {
             enemySpawnCounter = 0;
-            // 产生普通敌机
+            // 随机产生敌机
             if (enemyAircrafts.size() < enemyMaxNumber) {
-                enemyAircrafts.add(new MobEnemy(
-                        (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth())),
-                        (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                        0,
-                        10,
-                        30
-                ));
+                // 生成0-4之间的随机数
+                int index = (int) (Math.random() * 5);
+                AbstractAircraft enemy = null;
+                // TODO: 之后切换成工厂模式
+                switch (index) {
+                    case 0:
+                        enemy = new MobEnemy(
+                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                                0,
+                                10,
+                                30);
+                        break;
+                    case 1:
+                        enemy = new EliteEnemy(
+                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.ELITE_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                                0,
+                                5,
+                                30);
+                        break;
+                    case 2:
+                        enemy = new ElitePlusEnemy(
+                                (int) (Math.random()
+                                        * (Main.WINDOW_WIDTH - ImageManager.ELITE_PLUS_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                                0,
+                                5,
+                                30);
+                        break;
+                    case 3:
+                        enemy = new EliteProEnemy(
+                                (int) (Math.random()
+                                        * (Main.WINDOW_WIDTH - ImageManager.ELITE_PRO_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                                0,
+                                5,
+                                60);
+                        break;
+                    case 4:
+                        enemy = new BossEnemy(
+                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.BOSS_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                                0,
+                                2,
+                                90);
+                        break;
+                }
+                enemyAircrafts.add(enemy);
             }
         }
         // 飞机射出子弹
@@ -148,14 +196,14 @@ public class Game extends Pane {
         checkResultAction();
     }
 
-    //***********************
-    //      Action 各部分
-    //***********************
+    // ***********************
+    // Action 各部分
+    // ***********************
     private void shootAction() {
         shootCounter++;
         if (shootCounter >= shootCycle) {
             shootCounter = 0;
-            //英雄机射击
+            // 英雄机射击
             heroBullets.addAll(heroAircraft.shoot());
             // TODO 敌机射击
         }
@@ -231,11 +279,10 @@ public class Game extends Pane {
         // Todo: 删除无效道具
     }
 
-
     /**
      * 检查游戏是否结束，若结束：关闭线程池
      */
-    private void checkResultAction(){
+    private void checkResultAction() {
         // 游戏结束检查英雄机是否存活
         if (heroAircraft.getHp() <= 0) {
             gameOverFlag = true;
@@ -243,10 +290,9 @@ public class Game extends Pane {
         }
     };
 
-
-    //***********************
-    //      Render 各部分
-    //***********************
+    // ***********************
+    // Render 各部分
+    // ***********************
 
     private void render() {
         // 背景滚动
@@ -270,8 +316,7 @@ public class Game extends Pane {
         gc.drawImage(
                 ImageManager.HERO_IMAGE,
                 heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2.0,
-                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2.0
-        );
+                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2.0);
 
         paintScoreAndLife();
     }
@@ -284,13 +329,13 @@ public class Game extends Pane {
         for (AbstractFlyingObject object : objects) {
             Image image = object.getImage();
             if (image == null) {
-                throw new IllegalStateException(objects.getClass().getName() + " has object without image: " + object.getClass().getName());
+                throw new IllegalStateException(
+                        objects.getClass().getName() + " has object without image: " + object.getClass().getName());
             }
             gc.drawImage(
                     image,
                     object.getLocationX() - image.getWidth() / 2.0,
-                    object.getLocationY() - image.getHeight() / 2.0
-            );
+                    object.getLocationY() - image.getHeight() / 2.0);
         }
     }
 
