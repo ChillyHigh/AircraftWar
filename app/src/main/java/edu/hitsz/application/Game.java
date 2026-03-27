@@ -206,6 +206,9 @@ public class Game extends Pane {
             // 英雄机射击
             heroBullets.addAll(heroAircraft.shoot());
             // TODO 敌机射击
+            for (AbstractAircraft enemyAircraft : enemyAircrafts) {
+                enemyBullets.addAll(enemyAircraft.shoot());
+            }
         }
     }
 

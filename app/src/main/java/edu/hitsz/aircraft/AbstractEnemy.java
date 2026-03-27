@@ -13,16 +13,16 @@ import edu.hitsz.bullet.BaseBullet;
  */
 public abstract class AbstractEnemy extends AbstractAircraft {
     // 敌机被击落后增加的分数
-    protected int score;
+    protected int score = 10;
 
     // 子弹射击方向
-    protected int direction;
+    protected int direction = 1;
 
     // 每次射击发射子弹数量
-    protected int shootNum;
+    protected int shootNum = 1;
 
     // 子弹威力
-    protected int power;
+    protected int power = 30;
 
     public AbstractEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
