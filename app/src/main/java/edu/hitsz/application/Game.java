@@ -205,7 +205,7 @@ public class Game extends Pane {
             shootCounter = 0;
             // 英雄机射击
             heroBullets.addAll(heroAircraft.shoot());
-            // TODO 敌机射击
+            // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
                 enemyBullets.addAll(enemyAircraft.shoot());
             }
@@ -234,7 +234,18 @@ public class Game extends Pane {
      * 3. 英雄获得补给
      */
     private void crashCheckAction() {
-        // TODO 敌机子弹攻击英雄
+        // 敌机子弹攻击英雄
+        for (BaseBullet bullet : enemyBullets) {
+            if (bullet.notValid()) {
+                continue;
+            }
+            if (heroAircraft.crash(bullet)) {
+                // 英雄机撞击到敌机子弹
+                // 英雄机损失一定生命值
+                heroAircraft.decreaseHp(bullet.getPower());
+                bullet.vanish();
+            }
+        }
 
         // 英雄子弹攻击敌机
         for (BaseBullet bullet : heroBullets) {
