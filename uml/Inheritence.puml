@@ -47,7 +47,7 @@ class HeroAircraft {
 
 AbstractAircraft <|-- HeroAircraft
 
-class AbstractEnemy {
+abstract class AbstractEnemy {
     # score: int
     # direction: int
     # shootNum: int
@@ -64,7 +64,25 @@ AbstractAircraft <|-- AbstractEnemy
 class MobEnemy {
     + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
 }
+
+class EliteEnemy {
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+class ElitePlusEnemy {
+    + ElitePlusEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+class EliteProEnemy {
+    + EliteProEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+class BossEnemy {
+    + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
 AbstractEnemy <|-- MobEnemy
+AbstractEnemy <|-- EliteEnemy
+AbstractEnemy <|-- ElitePlusEnemy
+AbstractEnemy <|-- EliteProEnemy
+AbstractEnemy <|-- BossEnemy
 
 abstract class BaseBullet
 {
