@@ -7,6 +7,7 @@ import javafx.stage.Stage;
 
 /**
  * 程序入口
+ * 
  * @author hitsz & doctxing
  */
 public class Main extends Application {

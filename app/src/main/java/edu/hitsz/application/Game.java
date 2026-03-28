@@ -4,6 +4,7 @@ import edu.hitsz.aircraft.*;
 import edu.hitsz.aircraft.enemy.EliteEnemy;
 import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
 import edu.hitsz.aircraft.enemy.EliteProEnemy;
+import edu.hitsz.aircraft.enemy.ApolloEnemy;
 import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.aircraft.enemy.MobEnemy;
@@ -26,7 +27,7 @@ import java.util.List;
 
 /**
  * 游戏主面板，游戏启动
- * 
+ *
  * @author hitsz
  */
 public class Game extends Pane {
@@ -34,7 +35,7 @@ public class Game extends Pane {
     private int backGroundTop = 0;
 
     // 游戏逻辑更新间隔
-    private int timeInterval = 40;
+    private int timeInterval = 20;
 
     private final HeroAircraft heroAircraft;
     private final List<AbstractAircraft> enemyAircrafts;
@@ -145,7 +146,7 @@ public class Game extends Pane {
                                 (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth())),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
-                                10,
+                                5,
                                 30);
                         break;
                     case 1:
@@ -153,16 +154,16 @@ public class Game extends Pane {
                                 (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.ELITE_ENEMY_IMAGE.getWidth())),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
-                                5,
+                                2,
                                 30);
                         break;
                     case 2:
-                        enemy = new ElitePlusEnemy(
+                        enemy = new ApolloEnemy(
                                 (int) (Math.random()
                                         * (Main.WINDOW_WIDTH - ImageManager.ELITE_PLUS_ENEMY_IMAGE.getWidth())),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
-                                5,
+                                2,
                                 30);
                         break;
                     case 3:
@@ -171,15 +172,15 @@ public class Game extends Pane {
                                         * (Main.WINDOW_WIDTH - ImageManager.ELITE_PRO_ENEMY_IMAGE.getWidth())),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
-                                5,
+                                2,
                                 60);
                         break;
                     case 4:
-                        enemy = new BossEnemy(
+                        enemy = new ApolloEnemy(
                                 (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.BOSS_ENEMY_IMAGE.getWidth())),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
-                                2,
+                                1,
                                 90);
                         break;
                 }
@@ -208,7 +209,7 @@ public class Game extends Pane {
         if (shootCounter >= shootCycle) {
             shootCounter = 0;
             // 英雄机射击
-            AudioManager.playSound(AudioManager.LASER_CANNON);
+            AudioManager.playSound(AudioManager.BULLET_HIT);
             heroBullets.addAll(heroAircraft.shoot());
             // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
@@ -281,7 +282,7 @@ public class Game extends Pane {
                 // 英雄机 与 敌机 相撞，均损毁
                 if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
                     enemyAircraft.vanish();
-                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
+                    // heroAircraft.decreaseHp(Integer.MAX_VALUE);
                 }
             }
         }
@@ -369,11 +370,24 @@ public class Game extends Pane {
                 throw new IllegalStateException(
                         objects.getClass().getName() + " has object without image: " + object.getClass().getName());
             }
-            gc.drawImage(
+            drawRotatedImage(
                     image,
-                    object.getLocationX() - image.getWidth() / 2.0,
-                    object.getLocationY() - image.getHeight() / 2.0);
+                    object.getLocationX(),
+                    object.getLocationY(),
+                    object.getRotation(),
+                    object.getScale());
         }
+    }
+
+    private void drawRotatedImage(Image image, double centerX, double centerY, double angleDegrees, double scale) {
+        double drawWidth = image.getWidth() * scale;
+        double drawHeight = image.getHeight() * scale;
+
+        gc.save();
+        gc.translate(centerX, centerY);
+        gc.rotate(angleDegrees);
+        gc.drawImage(image, -drawWidth / 2.0, -drawHeight / 2.0, drawWidth, drawHeight);
+        gc.restore();
     }
 
     private void paintScoreAndLife() {

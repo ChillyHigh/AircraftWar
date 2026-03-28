@@ -43,6 +43,7 @@ public class ImageManager {
     public static Image ELITE_PLUS_ENEMY_IMAGE;
     public static Image ELITE_PRO_ENEMY_IMAGE;
     public static Image BOSS_ENEMY_IMAGE;
+    public static Image APOLLO_IMAGE;
 
     public static Image PROP_BLOOD_IMAGE;
     public static Image PROP_BOMB_IMAGE;
@@ -65,6 +66,8 @@ public class ImageManager {
             PROP_BLOOD_IMAGE = loadFromResources("/images/prop_blood.png");
             PROP_BOMB_IMAGE = loadFromResources("/images/prop_bomb.png");
             PROP_BULLET_IMAGE = loadFromResources("/images/prop_bullet.png");
+
+            APOLLO_IMAGE = loadFromResources("/images/Apollo.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);

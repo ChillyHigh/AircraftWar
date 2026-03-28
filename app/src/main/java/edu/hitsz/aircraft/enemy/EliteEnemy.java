@@ -35,7 +35,7 @@ public class EliteEnemy extends AbstractEnemy {
             bullet = new EnemyBullet(x + (i * 2 - shootNum + 1) * 10, y, speedX, speedY, power);
             res.add(bullet);
         }
-        System.out.println("EliteEnemy shoot: " + res.size() + " bullets");
+        // System.out.println("EliteEnemy shoot: " + res.size() + " bullets");
         return res;
     }
 
