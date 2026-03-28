@@ -34,6 +34,7 @@ public class Main extends Application {
 
         primaryStage.show();
 
+        AudioManager.playBGM(AudioManager.BGM);
         game.action();
     }
 }

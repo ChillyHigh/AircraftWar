@@ -32,7 +32,8 @@ javafx {
     version = "21.0.2"
     modules = listOf(
         "javafx.controls",
-        "javafx.graphics"
+        "javafx.graphics",
+        "javafx.media"
     )
 }
 

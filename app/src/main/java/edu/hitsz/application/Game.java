@@ -208,6 +208,7 @@ public class Game extends Pane {
         if (shootCounter >= shootCycle) {
             shootCounter = 0;
             // 英雄机射击
+            AudioManager.playSound(AudioManager.LASER_CANNON);
             heroBullets.addAll(heroAircraft.shoot());
             // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
@@ -293,6 +294,7 @@ public class Game extends Pane {
             if (heroAircraft.crash(prop)) {
                 // 英雄机撞击到道具
                 // 道具生效
+                AudioManager.playSound(AudioManager.GET_SUPPLY);
                 prop.activate(heroAircraft);
                 prop.vanish();
             }

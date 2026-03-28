@@ -10,7 +10,6 @@ import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
-import edu.hitsz.prop.BaseProp;
 import edu.hitsz.prop.BloodProp;
 import edu.hitsz.prop.BulletPlusProp;
 import edu.hitsz.prop.BulletProp;
