@@ -8,6 +8,8 @@ import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.aircraft.enemy.MobEnemy;
 import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.factory.PropFactory;
+import edu.hitsz.prop.BaseProp;
 import edu.hitsz.basic.AbstractFlyingObject;
 
 import javafx.animation.AnimationTimer;
@@ -38,6 +40,7 @@ public class Game extends Pane {
     private final List<AbstractAircraft> enemyAircrafts;
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
+    private final List<BaseProp> props;
 
     // 屏幕中出现的敌机最大数量
     private final int enemyMaxNumber = 5;
@@ -80,6 +83,7 @@ public class Game extends Pane {
         enemyAircrafts = new LinkedList<>();
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
+        props = new LinkedList<>();
 
         // 启动英雄机鼠标监听（移动/拖拽即跟随）
         new HeroController(this, heroAircraft);
@@ -265,7 +269,12 @@ public class Game extends Pane {
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
                         // TODO 获得分数，产生道具补给
+                        BaseProp prop = PropFactory.creatProp("Blood",
+                                enemyAircraft.getLocationX(),
+                                enemyAircraft.getLocationY(), 0, 2);
                         score += 10;
+                        props.add(prop);
+
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁
@@ -276,7 +285,18 @@ public class Game extends Pane {
             }
         }
 
-        // Todo: 我方获得道具，道具生效
+        // TODO: 我方获得道具，道具生效
+        for (BaseProp prop : props) {
+            if (prop.notValid()) {
+                continue;
+            }
+            if (heroAircraft.crash(prop)) {
+                // 英雄机撞击到道具
+                // 道具生效
+                prop.activate(heroAircraft);
+                prop.vanish();
+            }
+        }
 
     }
 
@@ -290,7 +310,8 @@ public class Game extends Pane {
         enemyBullets.removeIf(AbstractFlyingObject::notValid);
         heroBullets.removeIf(AbstractFlyingObject::notValid);
         enemyAircrafts.removeIf(AbstractFlyingObject::notValid);
-        // Todo: 删除无效道具
+        // TODO: 删除无效道具
+        props.removeIf(AbstractFlyingObject::notValid);
     }
 
     /**
@@ -324,8 +345,8 @@ public class Game extends Pane {
         paintImageWithPositionRevised(heroBullets);
         paintImageWithPositionRevised(enemyAircrafts);
 
-        // Todo: 绘制道具
-
+        // TODO: 绘制道具
+        paintImageWithPositionRevised(props);
         // 绘制英雄机
         gc.drawImage(
                 ImageManager.HERO_IMAGE,
