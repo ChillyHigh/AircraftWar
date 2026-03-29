@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 public abstract class AbstractFlyingObject {
 
     // locationX,locationY为图片中心位置坐标
+    // TODO: 后期换成浮点数
     protected int locationX;
     protected int locationY;
 
