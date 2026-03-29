@@ -374,6 +374,10 @@ public class Game extends Pane {
 
         paintImageWithPositionRevised(bossAircrafts);
 
+        for (AbstractAircraft bossAircraft : bossAircrafts) {
+            bossAircraft.postRender(gc);
+        }
+
         // TODO: 绘制道具
         paintImageWithPositionRevised(props);
         // 绘制英雄机

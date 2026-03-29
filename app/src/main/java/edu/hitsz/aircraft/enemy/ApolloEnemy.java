@@ -9,12 +9,14 @@ import edu.hitsz.basic.SpriteAnimator;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public class ApolloEnemy extends AbstractEnemy {
 
     private final SpriteAnimator animator;
+    private final SpriteAnimator animatorGlow;
 
     private enum State {
         INIT,
@@ -50,6 +52,8 @@ public class ApolloEnemy extends AbstractEnemy {
         super.scale = 0.5;
         this.animator = new SpriteAnimator("apollo",
                 204, 226, 10, 9, 5, 8);
+        this.animatorGlow = new SpriteAnimator("apollo_glow",
+                204, 226, 10, 9, 5, 8);
         this.width = animator.getFrameWidth();
         this.height = animator.getFrameHeight();
 
@@ -75,6 +79,7 @@ public class ApolloEnemy extends AbstractEnemy {
             rotation = Math.toDegrees(Math.atan2(dashVelocityY, dashVelocityX)) + 90;
         }
         animator.update();
+        animatorGlow.update();
         leftRibbon.update(locationX, locationY, Math.toRadians(rotation));
         rightRibbon.update(locationX, locationY, Math.toRadians(rotation));
 
@@ -164,6 +169,7 @@ public class ApolloEnemy extends AbstractEnemy {
         this.desiredRotateSpeed = rotateSpeed;
         this.intertia = intertia;
         animator.setIndex(animationIndex);
+        animatorGlow.setIndex(animationIndex);
     }
 
     @Override
@@ -192,6 +198,17 @@ public class ApolloEnemy extends AbstractEnemy {
     public void preRender(GraphicsContext gc) {
         leftRibbon.render(gc);
         rightRibbon.render(gc);
+    }
+
+    @Override
+    public void postRender(GraphicsContext gc) {
+        gc.save();
+        gc.setGlobalBlendMode(BlendMode.ADD);
+        gc.translate(locationX, locationY);
+        gc.rotate(rotation);
+        gc.drawImage(animatorGlow.getCurrentImage(), -width * scale / 2.0, -height * scale / 2.0,
+                width * scale, height * scale);
+        gc.restore();
     }
 
     public void setState(int state) {

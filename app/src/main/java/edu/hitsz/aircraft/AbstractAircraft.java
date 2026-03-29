@@ -37,6 +37,10 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     public void preRender(GraphicsContext gc) {
         // 默认不需要预渲染
     }
+
+    public void postRender(GraphicsContext gc) {
+        // 默认不需要后渲染
+    }
     /**
      * 飞机射击方法，可射击对象必须实现
      * @return

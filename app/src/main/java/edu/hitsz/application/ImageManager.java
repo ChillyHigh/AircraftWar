@@ -43,8 +43,11 @@ public class ImageManager {
     public static Image ELITE_PLUS_ENEMY_IMAGE;
     public static Image ELITE_PRO_ENEMY_IMAGE;
     public static Image BOSS_ENEMY_IMAGE;
+
     public static Image APOLLO_IMAGE;
     public static Image ARTEMIS_IMAGE;
+    public static Image APOLLP_GLOW_IMAGE;
+    public static Image ARTEMIS_GLOW_IMAGE;
 
     public static Image PROP_BLOOD_IMAGE;
     public static Image PROP_BOMB_IMAGE;
@@ -69,7 +72,9 @@ public class ImageManager {
             PROP_BULLET_IMAGE = loadFromResources("/images/prop_bullet.png");
 
             APOLLO_IMAGE = loadFromResources("/images/Apollo.png");
+            APOLLP_GLOW_IMAGE = loadFromResources("/images/ApolloGlow.png");
             ARTEMIS_IMAGE = loadFromResources("/images/Artemis.png");
+            ARTEMIS_GLOW_IMAGE = loadFromResources("/images/ArtemisGlow.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
@@ -108,6 +113,8 @@ public class ImageManager {
         return switch (name.toLowerCase()) {
             case "apollo" -> APOLLO_IMAGE;
             case "artemis" -> ARTEMIS_IMAGE;
+            case "apollo_glow" -> APOLLP_GLOW_IMAGE;
+            case "artemis_glow" -> ARTEMIS_GLOW_IMAGE;
             default -> null;
         };
     }
