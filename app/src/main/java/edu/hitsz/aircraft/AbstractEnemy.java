@@ -28,8 +28,8 @@ public abstract class AbstractEnemy extends AbstractAircraft {
     private double speedY = 0;
     private double omega = 0.0; // 角速度，单位为度/帧
 
-    private double actualX = 0.0;
-    private double actualY = 0.0;
+    protected double actualX = 0.0;
+    protected double actualY = 0.0;
 
     public AbstractEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
@@ -55,9 +55,18 @@ public abstract class AbstractEnemy extends AbstractAircraft {
     protected boolean moveToward(double targetX, double targetY, double maxSpeed, double inertia) {
         double dx = targetX - locationX;
         double dy = targetY - locationY;
+
+        if (maxSpeed == Double.POSITIVE_INFINITY) { // 无速度限制，直接设置位置
+            locationX = (int) Math.round(targetX);
+            locationY = (int) Math.round(targetY);
+            speedX = 0;
+            speedY = 0;
+            return true;
+        }
+
         double distance = Math.hypot(dx, dy);
 
-        if (distance < 1e-6) { // 已经到达目标点
+        if (distance < 1) { // 已经到达目标点
             actualX = targetX;
             actualY = targetY;
             locationX = (int) Math.round(targetX);
@@ -65,6 +74,11 @@ public abstract class AbstractEnemy extends AbstractAircraft {
             speedX = 0;
             speedY = 0;
             return true;
+        }
+
+        // 靠近目标点时速度逐渐降低，避免过冲
+        if (distance < maxSpeed * 0.5) {
+            maxSpeed = distance * 0.5;
         }
 
         // 目标速度

@@ -1,10 +1,9 @@
 package edu.hitsz.aircraft.enemy;
 //TODO: 后续文件移动位置
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.paint.Color;
 
 /**
@@ -12,67 +11,120 @@ import javafx.scene.paint.Color;
  */
 public class Ribbon {
     private static final int RIBBON_SEGMENTS = 12; // 尾部最大长度
+
+    // 历史记录数组
     private final double[] oldX = new double[RIBBON_SEGMENTS + 2];
     private final double[] oldY = new double[RIBBON_SEGMENTS + 2];
     private final double[] oldRot = new double[RIBBON_SEGMENTS + 2];
 
+    // 预分配的顶点数组，避免每帧 new 列表和对象
+    private final double[] pointsX = new double[RIBBON_SEGMENTS];
+    private final double[] pointsY = new double[RIBBON_SEGMENTS];
+    private final double[] leftX = new double[RIBBON_SEGMENTS];
+    private final double[] leftY = new double[RIBBON_SEGMENTS];
+    private final double[] rightX = new double[RIBBON_SEGMENTS];
+    private final double[] rightY = new double[RIBBON_SEGMENTS];
+    private final double[] quadX = new double[4];
+    private final double[] quadY = new double[4];
+
     private final int direction; // -1 左丝带, 1 右丝带
     private final double scale;
+    private final Color startColor;
+    private final Color endColor;
 
-    public Ribbon(int direction, double scale) {
+    public Ribbon(int direction, double scale, Color startColor, Color endColor) {
         this.direction = direction;
         this.scale = scale;
+        this.startColor = startColor;
+        this.endColor = endColor;
     }
 
     /**
      * 更新尾部历史记录
-     * 
-     * @param locationX
-     * @param locationY
-     * @param rotation
      */
-    public void update(double locationX, double locationY, double rotation) {
-        for (int i = oldX.length - 1; i > 0; i--) {
-            oldX[i] = oldX[i - 1];
-            oldY[i] = oldY[i - 1];
-            oldRot[i] = oldRot[i - 1];
-        }
+    public void update(double locationX, double locationY, double rotationRad) {
+        System.arraycopy(oldX, 0, oldX, 1, oldX.length - 1);
+        System.arraycopy(oldY, 0, oldY, 1, oldY.length - 1);
+        System.arraycopy(oldRot, 0, oldRot, 1, oldRot.length - 1);
+
         oldX[0] = locationX;
         oldY[0] = locationY;
-        oldRot[0] = Math.toRadians(rotation);
+        oldRot[0] = rotationRad;
     }
 
     public void render(GraphicsContext gc) {
-        List<Vec2> points = buildPoints(oldX[0], oldY[0], Math.toDegrees(oldRot[0]));
-        gc.setStroke(javafx.scene.paint.Color.WHITE);
-        for (int i = 0; i < points.size() - 1; i++) {
+        buildPointsInPlace(oldX[0], oldY[0], oldRot[0]);
+
+        double baseWidth = 8.0 * scale;
+
+        for (int i = 0; i < RIBBON_SEGMENTS; i++) {
+            double rx;
+            double ry;
+
+            if (i < RIBBON_SEGMENTS - 1) {
+                double dx = pointsX[i + 1] - pointsX[i];
+                double dy = pointsY[i + 1] - pointsY[i];
+                double len = Math.hypot(dx, dy);
+                rx = -dy / (len < 1e-5 ? 1 : len);
+                ry = dx / (len < 1e-5 ? 1 : len);
+            } else {
+                double dx = pointsX[i] - pointsX[i - 1];
+                double dy = pointsY[i] - pointsY[i - 1];
+                double len = Math.hypot(dx, dy);
+                rx = -dy / (len < 1e-5 ? 1 : len);
+                ry = dx / (len < 1e-5 ? 1 : len);
+            }
+
             double ratio = i / (double) RIBBON_SEGMENTS;
-            Vec2 p1 = points.get(i);
-            Vec2 p2 = points.get(i + 1);
-            gc.setLineWidth(Math.min(16.0 * (1 - ratio) + 0.5, 4.0));
-            gc.setStroke(ribbonColor(ratio));
-            gc.strokeLine(p1.x, p1.y, p2.x, p2.y);
+            double currentHalfWidth = (baseWidth * 0.5) * (1.0 - ratio);
+
+            leftX[i] = pointsX[i] + rx * currentHalfWidth;
+            leftY[i] = pointsY[i] + ry * currentHalfWidth;
+            rightX[i] = pointsX[i] - rx * currentHalfWidth;
+            rightY[i] = pointsY[i] - ry * currentHalfWidth;
         }
 
+        gc.save();
+
+        gc.setGlobalBlendMode(BlendMode.ADD);
+        gc.setEffect(new GaussianBlur(2));
+
+        for (int i = 0; i < RIBBON_SEGMENTS - 1; i++) {
+            double ratio = i / (double) RIBBON_SEGMENTS;
+            setQuad(i);
+            gc.setFill(ribbonColor(ratio));
+            gc.fillPolygon(quadX, quadY, 4);
+
+            // setInsetQuad(i, 0.42);
+            // gc.setFill(coreColor(ratio));
+            // gc.fillPolygon(quadX, quadY, 4);
+        }
+
+        gc.restore();
     }
 
     private Color ribbonColor(double ratio) {
-        Color start = Color.rgb(209, 252, 205, 0.8);
-        Color end = Color.rgb(44, 132, 28, 0.1);
-        return start.interpolate(end, Math.pow(ratio, 1.5));
+        return startColor.interpolate(endColor, Math.pow(ratio, 1.5));
     }
 
-    private List<Vec2> buildPoints(
-            double locationX,
-            double locationY,
-            double rotation) {
-        List<Vec2> points = new ArrayList<>();
-        double rotationRad = Math.toRadians(rotation);
+    /**
+     * 核心优化：展开向量计算，直接写入成员数组 pointsX 和 pointsY
+     */
+    private void buildPointsInPlace(double locationX, double locationY, double rotationRad) {
         double timeSeconds = System.nanoTime() / 1_000_000_000.0;
 
-        Vec2 ribbonOffset = new Vec2(0, -14.0 * scale).rotate(rotationRad);
-        ribbonOffset = ribbonOffset.add(new Vec2(26.0 * direction, 0).rotate(rotationRad));
-        Vec2 root = new Vec2(locationX, locationY).add(ribbonOffset);
+        // 展开 Vec2(0, -14.0 * scale).rotate(rotationRad)
+        double cosRot = Math.cos(rotationRad);
+        double sinRot = Math.sin(rotationRad);
+        double off1X = 14.0 * scale * sinRot;
+        double off1Y = -14.0 * scale * cosRot;
+
+        // 展开 Vec2(26.0 * direction, 0).rotate(rotationRad)
+        double off2X = 26.0 * scale * direction * cosRot;
+        double off2Y = 26.0 * scale * direction * sinRot;
+
+        double rootX = locationX + off1X + off2X;
+        double rootY = locationY + off1Y + off2Y;
 
         double currentSegmentRotation = rotationRad;
 
@@ -87,24 +139,32 @@ public class Ribbon {
                     * 12.0
                     * scale;
 
-            Vec2 stretchDirection = new Vec2(0, 1).rotate(currentSegmentRotation);
-            Vec2 normalDirection = new Vec2(direction, 0).rotate(currentSegmentRotation);
-            Vec2 sinusoidalOffset = normalDirection.multiply(sinusoidalFactor);
-            Vec2 stretch = stretchDirection.multiply(ratio * 540.0 * scale);
+            // 展开向量旋转和乘法
+            double cosCSR = Math.cos(currentSegmentRotation);
+            double sinCSR = Math.sin(currentSegmentRotation);
 
-            points.add(root.add(stretch).add(sinusoidalOffset));
+            // Vec2(0, 1).rotate(currentSegmentRotation)
+            double stretchDirX = -sinCSR;
+            double stretchDirY = cosCSR;
+
+            // Vec2(direction, 0).rotate(currentSegmentRotation)
+            double normDirX = direction * cosCSR;
+            double normDirY = direction * sinCSR;
+
+            double stretchFactor = ratio * 540.0 * scale;
+
+            // 直接计算最终的 X 和 Y 坐标，存入预分配的数组
+            pointsX[i] = rootX + stretchDirX * stretchFactor + normDirX * sinusoidalFactor;
+            pointsY[i] = rootY + stretchDirY * stretchFactor + normDirY * sinusoidalFactor;
 
             currentSegmentRotation += segmentRotationOffset;
         }
-
-        return points;
     }
 
     private static double wrapAngle(double angle) {
         return angle - 2 * Math.PI * Math.floor((angle + Math.PI) / (2 * Math.PI));
     }
 
-    // 线性插值工具，value在[from, to]范围内时返回0.0-1.0的比例，否则返回0.0或1.0
     private static double lerpValue(double from, double to, double value) {
         if (Math.abs(to - from) < 1e-6) {
             return value >= to ? 1.0 : 0.0;
@@ -112,41 +172,15 @@ public class Ribbon {
         return Math.clamp((value - from) / (to - from), 0.0, 1.0);
     }
 
-}
-
-final class Vec2 {
-    public final double x;
-    public final double y;
-
-    public Vec2(double x, double y) {
-        this.x = x;
-        this.y = y;
+    private void setQuad(int index) {
+        quadX[0] = leftX[index];
+        quadY[0] = leftY[index];
+        quadX[1] = leftX[index + 1];
+        quadY[1] = leftY[index + 1];
+        quadX[2] = rightX[index + 1];
+        quadY[2] = rightY[index + 1];
+        quadX[3] = rightX[index];
+        quadY[3] = rightY[index];
     }
 
-    public Vec2 add(Vec2 other) {
-        return new Vec2(x + other.x, y + other.y);
-    }
-
-    public Vec2 multiply(double k) {
-        return new Vec2(x * k, y * k);
-    }
-
-    public double length() {
-        return Math.hypot(x, y);
-    }
-
-    public Vec2 normalize() {
-        double len = length();
-        if (len < 1e-6)
-            return new Vec2(0, 0);
-        return new Vec2(x / len, y / len);
-    }
-
-    public Vec2 rotate(double angle) {
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-        return new Vec2(
-                x * cos - y * sin,
-                x * sin + y * cos);
-    }
 }

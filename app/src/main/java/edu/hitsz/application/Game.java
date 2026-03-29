@@ -4,6 +4,7 @@ import edu.hitsz.aircraft.*;
 import edu.hitsz.aircraft.enemy.EliteEnemy;
 import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
 import edu.hitsz.aircraft.enemy.EliteProEnemy;
+import edu.hitsz.aircraft.enemy.ExoTwinsManager;
 import edu.hitsz.aircraft.enemy.ApolloEnemy;
 import edu.hitsz.aircraft.enemy.ArtemisEnemy;
 import edu.hitsz.aircraft.enemy.BossEnemy;
@@ -46,6 +47,8 @@ public class Game extends Pane {
     private final List<BaseBullet> enemyBullets;
     private final List<BaseProp> props;
 
+    private final ExoTwinsManager exoTwinsManager;
+
     // 屏幕中出现的敌机最大数量
     private final int enemyMaxNumber = 5;
 
@@ -86,8 +89,11 @@ public class Game extends Pane {
 
         enemyAircrafts = new LinkedList<>();
         bossAircrafts = new ArrayList<>();
-        bossAircrafts.add(new ApolloEnemy(20, 20, 0, 0, 500));
-        bossAircrafts.add(new ArtemisEnemy(Main.WINDOW_WIDTH + 20, 20, 0, 0, 500));
+        ApolloEnemy apolloEnemy = new ApolloEnemy(20, 20, 0, 0, 500);
+        ArtemisEnemy artemisEnemy = new ArtemisEnemy(Main.WINDOW_WIDTH + 20, 20, 0, 0, 500);
+        exoTwinsManager = new ExoTwinsManager(apolloEnemy, artemisEnemy);
+        bossAircrafts.add(apolloEnemy);
+        bossAircrafts.add(artemisEnemy);
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
@@ -189,7 +195,7 @@ public class Game extends Pane {
                     // 90);
                     // break;
                 }
-                enemyAircrafts.add(enemy);
+                // enemyAircrafts.add(enemy);
             }
         }
         // 飞机射出子弹
@@ -244,6 +250,7 @@ public class Game extends Pane {
         for (AbstractAircraft bossAircraft : bossAircrafts) {
             bossAircraft.forward();
         }
+        exoTwinsManager.update(heroAircraft);
     }
 
     /**

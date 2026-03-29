@@ -10,6 +10,7 @@ import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 public class ApolloEnemy extends AbstractEnemy {
 
@@ -18,15 +19,25 @@ public class ApolloEnemy extends AbstractEnemy {
     private enum State {
         INIT,
         NORMAL,
-        DAMAGED,
-        CRITICAL
+        TWIN,
+        DASH,
     }
 
     private State state = State.INIT;
     private int counter1 = 0;
 
-    private final Ribbon leftRibbon = new Ribbon(-1, 0.5);
-    private final Ribbon rightRibbon = new Ribbon(1, 0.5);
+    private double desiredX;
+    private double desiredY;
+    private double lookX;
+    private double lookY;
+    private double desiredMoveSpeed;
+    private double desiredRotateSpeed;
+    private double dashVelocityX;
+    private double dashVelocityY;
+    private double intertia = 0.7;
+
+    private final Ribbon leftRibbon = new Ribbon(-1, 0.5, Color.rgb(12, 214, 49), Color.rgb(0, 115, 255));
+    private final Ribbon rightRibbon = new Ribbon(1, 0.5, Color.rgb(12, 214, 49), Color.rgb(0, 115, 255));
 
     private final List<BaseBullet> bullets = new ArrayList<>();
 
@@ -38,7 +49,7 @@ public class ApolloEnemy extends AbstractEnemy {
         super.rotation = 180.0;
         super.scale = 0.5;
         this.animator = new SpriteAnimator("apollo",
-                204, 226, 10, 9, 5, 3);
+                204, 226, 10, 9, 5, 8);
         this.width = animator.getFrameWidth();
         this.height = animator.getFrameHeight();
 
@@ -52,9 +63,20 @@ public class ApolloEnemy extends AbstractEnemy {
         if (state == State.NORMAL) {
             updateNormal();
         }
+        if (state == State.TWIN) {
+            moveToward(desiredX, desiredY, desiredMoveSpeed, intertia);
+            rotateToward(lookX, lookY, desiredRotateSpeed, intertia);
+        }
+        if (state == State.DASH) {
+            super.actualX += dashVelocityX;
+            super.actualY += dashVelocityY;
+            this.locationX = (int) Math.round(actualX);
+            this.locationY = (int) Math.round(actualY);
+            rotation = Math.toDegrees(Math.atan2(dashVelocityY, dashVelocityX)) + 90;
+        }
         animator.update();
-        leftRibbon.update(locationX, locationY, rotation);
-        rightRibbon.update(locationX, locationY, rotation);
+        leftRibbon.update(locationX, locationY, Math.toRadians(rotation));
+        rightRibbon.update(locationX, locationY, Math.toRadians(rotation));
 
     }
 
@@ -72,8 +94,10 @@ public class ApolloEnemy extends AbstractEnemy {
         if (distance < 10.0) {
             speed = speed * (distance / 10.0); // 距离越近速度越慢，避免过冲
         }
-        if (moveToward(targetX, targetY, speed, 0.9))
+        if (distance < 5.0) {
             state = State.NORMAL;
+        }
+        moveToward(targetX, targetY, speed, 0.9);
         rotateToward(targetX - 120, targetY + 140, 5.0, 0.9);
     }
 
@@ -83,20 +107,16 @@ public class ApolloEnemy extends AbstractEnemy {
         if (counter1 == 50 || counter1 == 100 || counter1 == 200 || counter1 == 250) {
             // 先清空之前的子弹列表，避免子弹无限增加
             bullets.clear();
-            // 添加朝着英雄飞机方向的子弹
+            // 添加朝着飞机指向方向的子弹
             double bulletSpeed = 5.0;
-            double dx = hero.getLocationX() - locationX;
-            double dy = hero.getLocationY() - locationY;
-            double distance = Math.hypot(dx, dy);
-            if (distance > 1e-6) {
-                double bulletSpeedX = dx / distance * bulletSpeed;
-                double bulletSpeedY = dy / distance * bulletSpeed;
-                bullets.add(new EnemyBullet(locationX,
-                        locationY,
-                        (int) Math.round(bulletSpeedX),
-                        (int) Math.round(bulletSpeedY),
-                        0));
-            }
+            double angleRad = Math.toRadians(rotation - 90);
+            double bulletSpeedX = bulletSpeed * Math.cos(angleRad);
+            double bulletSpeedY = bulletSpeed * Math.sin(angleRad);
+            bullets.add(new EnemyBullet(locationX,
+                    locationY,
+                    (int) Math.round(bulletSpeedX),
+                    (int) Math.round(bulletSpeedY),
+                    0));
         }
         double targetX = hero.getLocationX() + 120;
         double targetY = hero.getLocationY() - 140;
@@ -106,8 +126,44 @@ public class ApolloEnemy extends AbstractEnemy {
         if (counter1 > 300) {
             counter1 = 0;
         }
-        moveToward(targetX, targetY, 10.0, 0.9);
-        rotateToward(hero.getLocationX(), hero.getLocationY(), 10.0, 0.9);
+        double distance = Math.hypot(targetX - locationX, targetY - locationY);
+        double speed = 10.0;
+        if (distance < 10.0) {
+            speed = speed * (distance / 10.0); // 距离越近速度越慢，避免过冲
+        }
+        moveToward(targetX, targetY, speed, 0.95);
+        rotateToward(hero.getLocationX(), hero.getLocationY(), 6.0, 0.9);
+    }
+
+    /**
+     * Manager调用，用来管理Apollo和Artemis的行为切换<br>
+     * 
+     * @param targetX
+     * @param targetY
+     * @param lookX
+     * @param lookY
+     * @param moveSpeed
+     * @param rotateSpeed
+     * @param animationIndex
+     */
+    public void setDesiredState(
+            double targetX,
+            double targetY,
+            double lookX,
+            double lookY,
+            double moveSpeed,
+            double rotateSpeed,
+            double intertia,
+            int animationIndex) {
+
+        this.desiredX = targetX;
+        this.desiredY = targetY;
+        this.lookX = lookX;
+        this.lookY = lookY;
+        this.desiredMoveSpeed = moveSpeed;
+        this.desiredRotateSpeed = rotateSpeed;
+        this.intertia = intertia;
+        animator.setIndex(animationIndex);
     }
 
     @Override
@@ -136,5 +192,24 @@ public class ApolloEnemy extends AbstractEnemy {
     public void preRender(GraphicsContext gc) {
         leftRibbon.render(gc);
         rightRibbon.render(gc);
+    }
+
+    public void setState(int state) {
+        if (state == 0) {
+            this.state = State.NORMAL;
+            return;
+        } else if (state == 1) {
+            this.state = State.TWIN;
+            return;
+        } else if (state == 2) {
+            this.state = State.DASH;
+            return;
+        }
+        this.state = State.INIT;
+    }
+
+    public void setDashVelocity(double vx, double vy) {
+        this.dashVelocityX = vx;
+        this.dashVelocityY = vy;
     }
 }
