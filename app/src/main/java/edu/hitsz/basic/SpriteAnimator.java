@@ -32,8 +32,10 @@ public final class SpriteAnimator {
             int framesY,
             int frameInterval,
             int index) {
-        // TODO: 可以改成根据 name 从 ImageManager 中加载对应的精灵表
-        Image spriteSheet = ImageManager.APOLLO_IMAGE;
+        Image spriteSheet = ImageManager.getSpriteSheet(name);
+        if (spriteSheet == null) {
+            throw new IllegalArgumentException("未知精灵表: " + name);
+        }
 
         // 精灵表是一个包含 framesX * framesY 个帧的网格，每个帧的尺寸为 frameWidth * frameHeight
         PixelReader reader = spriteSheet.getPixelReader();
@@ -59,11 +61,10 @@ public final class SpriteAnimator {
         this.frames = frames;
         this.frameWidth = frameWidth;
         this.frameHeight = frameHeight;
-
         this.framesX = framesX;
         this.framesY = framesY;
         this.frameInterval = frameInterval;
-        this.index = index;
+        setIndex(index);
     }
 
     public void update() {

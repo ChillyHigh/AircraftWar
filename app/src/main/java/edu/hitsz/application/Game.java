@@ -5,6 +5,7 @@ import edu.hitsz.aircraft.enemy.EliteEnemy;
 import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
 import edu.hitsz.aircraft.enemy.EliteProEnemy;
 import edu.hitsz.aircraft.enemy.ApolloEnemy;
+import edu.hitsz.aircraft.enemy.ArtemisEnemy;
 import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.aircraft.enemy.MobEnemy;
@@ -159,8 +160,7 @@ public class Game extends Pane {
                         break;
                     case 2:
                         enemy = new ApolloEnemy(
-                                (int) (Math.random()
-                                        * (Main.WINDOW_WIDTH - ImageManager.ELITE_PLUS_ENEMY_IMAGE.getWidth())),
+                                (int) (Math.random() * (Main.WINDOW_WIDTH - 204)),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
                                 2,
@@ -176,8 +176,8 @@ public class Game extends Pane {
                                 60);
                         break;
                     case 4:
-                        enemy = new ApolloEnemy(
-                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.BOSS_ENEMY_IMAGE.getWidth())),
+                        enemy = new ArtemisEnemy(
+                                (int) (Math.random() * (Main.WINDOW_WIDTH - 204)),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
                                 1,
@@ -209,7 +209,7 @@ public class Game extends Pane {
         if (shootCounter >= shootCycle) {
             shootCounter = 0;
             // 英雄机射击
-            AudioManager.playSound(AudioManager.BULLET_HIT);
+            // AudioManager.playSound(AudioManager.BULLET_HIT);
             heroBullets.addAll(heroAircraft.shoot());
             // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {

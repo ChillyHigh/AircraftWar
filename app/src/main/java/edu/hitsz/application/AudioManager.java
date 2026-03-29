@@ -45,9 +45,7 @@ public class AudioManager {
         Media media = new Media(resolveResourceUrl(bgmPath));
         bgmPlayer = new MediaPlayer(media);
         bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE); // 循环播放
-        if (bgmPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
-            bgmPlayer.play();
-        }
+        bgmPlayer.play();
     }
 
     /**
@@ -62,15 +60,7 @@ public class AudioManager {
     }
 
     public static void playSound(String sfxPath) {
-        AudioClip clip = sfxCache.computeIfAbsent(sfxPath, path -> {
-            try {
-                return new AudioClip(resolveResourceUrl(path));
-            } catch (Exception e) {
-                System.err.println("无法加载音效: " + path);
-                e.printStackTrace();
-                return null;
-            }
-        });
+        AudioClip clip = sfxCache.computeIfAbsent(sfxPath, path -> new AudioClip(resolveResourceUrl(path)));
         if (clip != null) {
             clip.play();
         }
