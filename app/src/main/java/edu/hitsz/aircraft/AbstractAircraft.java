@@ -1,6 +1,7 @@
 package edu.hitsz.aircraft;
 
 import edu.hitsz.bullet.BaseBullet;
+import javafx.scene.canvas.GraphicsContext;
 import edu.hitsz.basic.AbstractFlyingObject;
 
 import java.util.List;
@@ -33,7 +34,9 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         return hp;
     }
 
-
+    public void preRender(GraphicsContext gc) {
+        // 默认不需要预渲染
+    }
     /**
      * 飞机射击方法，可射击对象必须实现
      * @return

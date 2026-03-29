@@ -23,6 +23,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.image.Image;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class Game extends Pane {
 
     private final HeroAircraft heroAircraft;
     private final List<AbstractAircraft> enemyAircrafts;
+    private final List<AbstractAircraft> bossAircrafts;
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
     private final List<BaseProp> props;
@@ -83,6 +85,9 @@ public class Game extends Pane {
         heroAircraft = HeroAircraft.getHeroAircraft();
 
         enemyAircrafts = new LinkedList<>();
+        bossAircrafts = new ArrayList<>();
+        bossAircrafts.add(new ApolloEnemy(20, 20, 0, 0, 500));
+        bossAircrafts.add(new ArtemisEnemy(Main.WINDOW_WIDTH + 20, 20, 0, 0, 500));
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
@@ -137,8 +142,8 @@ public class Game extends Pane {
             enemySpawnCounter = 0;
             // 随机产生敌机
             if (enemyAircrafts.size() < enemyMaxNumber) {
-                // 生成0-4之间的随机数
-                int index = (int) (Math.random() * 5);
+                // 生成0-3之间的随机数
+                int index = (int) (Math.random() * 4);
                 AbstractAircraft enemy = null;
                 // TODO: 之后切换成工厂模式
                 switch (index) {
@@ -159,7 +164,7 @@ public class Game extends Pane {
                                 30);
                         break;
                     case 2:
-                        enemy = new ApolloEnemy(
+                        enemy = new EliteEnemy(
                                 (int) (Math.random() * (Main.WINDOW_WIDTH - 204)),
                                 (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
                                 0,
@@ -175,14 +180,14 @@ public class Game extends Pane {
                                 2,
                                 60);
                         break;
-                    case 4:
-                        enemy = new ArtemisEnemy(
-                                (int) (Math.random() * (Main.WINDOW_WIDTH - 204)),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                1,
-                                90);
-                        break;
+                    // case 4:
+                    // enemy = new ArtemisEnemy(
+                    // (int) (Math.random() * (Main.WINDOW_WIDTH - 204)),
+                    // (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
+                    // 0,
+                    // 1,
+                    // 90);
+                    // break;
                 }
                 enemyAircrafts.add(enemy);
             }
@@ -215,6 +220,11 @@ public class Game extends Pane {
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
                 enemyBullets.addAll(enemyAircraft.shoot());
             }
+            // Boss机射击
+            for (AbstractAircraft bossAircraft : bossAircrafts) {
+                enemyBullets.addAll(bossAircraft.shoot());
+            }
+
         }
     }
 
@@ -230,6 +240,9 @@ public class Game extends Pane {
     private void aircraftMoveAction() {
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
             enemyAircraft.forward();
+        }
+        for (AbstractAircraft bossAircraft : bossAircrafts) {
+            bossAircraft.forward();
         }
     }
 
@@ -347,6 +360,12 @@ public class Game extends Pane {
         paintImageWithPositionRevised(enemyBullets);
         paintImageWithPositionRevised(heroBullets);
         paintImageWithPositionRevised(enemyAircrafts);
+
+        for (AbstractAircraft bossAircraft : bossAircrafts) {
+            bossAircraft.preRender(gc);
+        }
+
+        paintImageWithPositionRevised(bossAircrafts);
 
         // TODO: 绘制道具
         paintImageWithPositionRevised(props);
