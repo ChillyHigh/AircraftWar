@@ -5,6 +5,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 
 /**
  * Ribbon类，用于给Apollo和Artemis添加尾部效果
@@ -52,6 +55,14 @@ public class Ribbon {
         oldRot[0] = rotationRad;
     }
 
+    public void resetHistory(double locationX, double locationY, double rotationRad) {
+        for (int i = 0; i < oldX.length; i++) {
+            oldX[i] = locationX;
+            oldY[i] = locationY;
+            oldRot[i] = rotationRad;
+        }
+    }
+
     public void render(GraphicsContext gc) {
         buildPointsInPlace(oldX[0], oldY[0], oldRot[0]);
 
@@ -90,9 +101,28 @@ public class Ribbon {
         gc.setEffect(new GaussianBlur(2));
 
         for (int i = 0; i < RIBBON_SEGMENTS - 1; i++) {
-            double ratio = i / (double) RIBBON_SEGMENTS;
+            double ratio0 = i / (double) RIBBON_SEGMENTS;
+            double ratio1 = (i + 1) / (double) RIBBON_SEGMENTS;
+
             setQuad(i);
-            gc.setFill(ribbonColor(ratio));
+
+            Color c0 = ribbonColor(ratio0);
+            Color c1 = ribbonColor(ratio1);
+
+            double startX = (quadX[0] + quadX[3]) * 0.5;
+            double startY = (quadY[0] + quadY[3]) * 0.5;
+            double endX = (quadX[2] + quadX[1]) * 0.5;
+            double endY = (quadY[2] + quadY[1]) * 0.5;
+
+            LinearGradient gradient = new LinearGradient(
+                    startX, startY,
+                    endX, endY,
+                    false,
+                    CycleMethod.NO_CYCLE,
+                    new Stop(0.0, c0),
+                    new Stop(1.0, c1));
+
+            gc.setFill(gradient);
             gc.fillPolygon(quadX, quadY, 4);
 
             // setInsetQuad(i, 0.42);
@@ -107,9 +137,6 @@ public class Ribbon {
         return startColor.interpolate(endColor, Math.pow(ratio, 1.5));
     }
 
-    /**
-     * 核心优化：展开向量计算，直接写入成员数组 pointsX 和 pointsY
-     */
     private void buildPointsInPlace(double locationX, double locationY, double rotationRad) {
         double timeSeconds = System.nanoTime() / 1_000_000_000.0;
 

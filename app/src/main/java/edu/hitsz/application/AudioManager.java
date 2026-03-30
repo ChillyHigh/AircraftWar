@@ -30,6 +30,8 @@ public class AudioManager {
     public static final String GET_SUPPLY = "/videos/get_supply.wav";
     public static final String GAME_OVER = "/videos/game_over.wav";
     public static final String LASER_CANNON = "/extraSounds/Splatshot.wav";
+    public static final String EXO_TWINS_DASH_TELEGRAPH = "/extraSounds/ArtemisApolloDashTelegraph.wav";
+    public static final String EXO_TWINS_DASH = "/extraSounds/ArtemisApolloDash.wav";
 
     /**
      * 播放背景音乐，循环播放<br>

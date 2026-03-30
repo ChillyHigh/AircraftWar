@@ -211,17 +211,22 @@ public class ArtemisEnemy extends AbstractEnemy {
     }
 
     public void setState(int state) {
+        State nextState;
         if (state == 0) {
-            this.state = State.NORMAL;
-            return;
+            nextState = State.NORMAL;
         } else if (state == 1) {
-            this.state = State.TWIN;
-            return;
+            nextState = State.TWIN;
         } else if (state == 2) {
-            this.state = State.DASH;
-            return;
+            nextState = State.DASH;
+        } else {
+            nextState = State.INIT;
         }
-        this.state = State.INIT;
+        if (this.state != State.DASH && nextState == State.DASH) {
+            double dashRotationRad = Math.atan2(dashVelocityY, dashVelocityX) + Math.PI / 2.0;
+            leftRibbon.resetHistory(locationX, locationY, dashRotationRad);
+            rightRibbon.resetHistory(locationX, locationY, dashRotationRad);
+        }
+        this.state = nextState;
     }
 
     public void setDashVelocity(double vx, double vy) {
