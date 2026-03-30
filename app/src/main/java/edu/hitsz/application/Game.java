@@ -2,12 +2,10 @@ package edu.hitsz.application;
 
 import edu.hitsz.aircraft.*;
 import edu.hitsz.aircraft.enemy.EliteEnemy;
-import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
 import edu.hitsz.aircraft.enemy.EliteProEnemy;
 import edu.hitsz.aircraft.enemy.ExoTwinsManager;
 import edu.hitsz.aircraft.enemy.ApolloEnemy;
 import edu.hitsz.aircraft.enemy.ArtemisEnemy;
-import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.aircraft.enemy.MobEnemy;
 import edu.hitsz.bullet.BaseBullet;
@@ -34,8 +32,6 @@ import java.util.List;
  * @author hitsz
  */
 public class Game extends Pane {
-
-    private int backGroundTop = 0;
 
     // 游戏逻辑更新间隔
     private int timeInterval = 20;
@@ -346,7 +342,9 @@ public class Game extends Pane {
             gameOverFlag = true;
             System.out.println("Game Over!");
         }
-    };
+    }
+
+    ;
 
     // ***********************
     // Render 各部分
@@ -356,12 +354,10 @@ public class Game extends Pane {
         // 背景滚动
         gc.clearRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
 
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT);
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop);
-        this.backGroundTop += 1;
-        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
-            this.backGroundTop = 0;
-        }
+        gc.save();
+        gc.translate(WindowShaker.getShakeOffsetX(), WindowShaker.getShakeOffsetY());
+
+        RenderBackground.renderBackground(gc);
 
         // 先绘制子弹，后绘制飞机
         paintImageWithPositionRevised(enemyBullets);
@@ -386,6 +382,7 @@ public class Game extends Pane {
                 heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2.0,
                 heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2.0);
 
+        gc.restore();
         paintScoreAndLife();
     }
 

@@ -2,6 +2,7 @@ package edu.hitsz.aircraft.enemy;
 
 import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.application.AudioManager;
+import edu.hitsz.application.WindowShaker;
 
 /**
  * 控制Apollo和Artemis的生成和行为
@@ -32,10 +33,10 @@ public class ExoTwinsManager {
     private static final double ENTER_SPEED = 8.0;
     private static final double ORBIT_SPEED = 40.0;
     private static final double PREPARE_SPEED = 7.0;
-    private static final double RETURN_SPEED = ORBIT_SPEED * 0.7;
+    private static final double ORBIT_ANGULAR_SPEED = Math.toRadians(180.0 * 6) / 50;
+    private static final double RETURN_SPEED = ORBIT_ANGULAR_SPEED * Math.hypot(ORBIT_RADIUS_X, ORBIT_RADIUS_Y);
     private static final double ROTATE_SPEED = 6.0;
-    private static final double ORBIT_ANGULAR_SPEED = Math.toRadians(180.0 * 3) / 50;
-    private static final double ORBIT_DURATION = Math.toRadians(180);
+    private static final double ORBIT_DURATION = Math.toRadians(180 * 2);
     private static final int PREPARE_DURATION = 35;
     private static final double DASH_SPEED = 60.0;
     private static final int DASH_DURATION = 24;
@@ -54,6 +55,7 @@ public class ExoTwinsManager {
 
     public void update(HeroAircraft hero) {
         phaseTimer++;
+        WindowShaker.updateScreenShake();
         switch (phase) {
             case IDLE -> {
                 apollo.setState(1);
@@ -73,6 +75,8 @@ public class ExoTwinsManager {
     private void updateEnterSide(HeroAircraft hero) {
         apollo.setState(1);
         artemis.setState(1);
+
+        orbitAngle = INIT_ORBIT_ANGLE;
 
         double heroX = hero.getLocationX();
         double heroY = hero.getLocationY();
@@ -197,6 +201,7 @@ public class ExoTwinsManager {
 
         if (phaseTimer >= PREPARE_DURATION) {
             nextPhase(TwinPhase.DASHING);
+            WindowShaker.startScreenShake(15.0, 0.9, DASH_DURATION);
         }
     }
 
@@ -259,9 +264,9 @@ public class ExoTwinsManager {
                 0);
 
         boolean apolloArrived = near(apollo.getLocationX(), apollo.getLocationY(),
-                apolloTargetX, apolloTargetY, ARRIVE_THRESHOLD * 4);
+                apolloTargetX, apolloTargetY, ARRIVE_THRESHOLD * 8);
         boolean artemisArrived = near(artemis.getLocationX(), artemis.getLocationY(),
-                artemisTargetX, artemisTargetY, ARRIVE_THRESHOLD * 4);
+                artemisTargetX, artemisTargetY, ARRIVE_THRESHOLD * 8);
 
         if (apolloArrived && artemisArrived) {
             lastOrbitAngle = orbitAngle;
