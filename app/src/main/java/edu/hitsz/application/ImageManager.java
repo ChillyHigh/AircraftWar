@@ -53,6 +53,10 @@ public class ImageManager {
     public static Image PROP_BOMB_IMAGE;
     public static Image PROP_BULLET_IMAGE;
 
+    public static Image CLOUD_DENSITY_MAP;
+    public static Image TECHY_NOISE;
+    public static Image WAVY_BLOTCH_NOISE;
+
     static {
         try {
 
@@ -75,6 +79,10 @@ public class ImageManager {
             APOLLP_GLOW_IMAGE = loadFromResources("/images/ApolloGlow.png");
             ARTEMIS_IMAGE = loadFromResources("/images/Artemis.png");
             ARTEMIS_GLOW_IMAGE = loadFromResources("/images/ArtemisGlow.png");
+
+            CLOUD_DENSITY_MAP = loadFromResources("/textures/CloudDensityMap.png");
+            TECHY_NOISE = loadFromResources("/textures/TechyNoise.png");
+            WAVY_BLOTCH_NOISE = loadFromResources("/textures/WavyBlotchNoise.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
