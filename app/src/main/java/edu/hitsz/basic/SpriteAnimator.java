@@ -91,13 +91,13 @@ public final class SpriteAnimator {
         if (index < 0 || index >= framesX) {
             throw new IllegalArgumentException("动画索引无效: " + index);
         }
-        this.currentFrame = index * framesY;
+//        this.currentFrame = index * framesY;
         this.index = index;
     }
 
     /**
      * 从精灵表中提取单帧图像
-     * 
+     *
      * @param reader       精灵表的像素读取器
      * @param sourceX      帧在精灵表中的起始 x 坐标
      * @param sourceY      帧在精灵表中的起始 y 坐标
@@ -120,8 +120,8 @@ public final class SpriteAnimator {
         }
 
         WritableImage frame = new WritableImage(frameWidth, frameHeight);
-        int copyWidth = Math.max(0, Math.min(frameWidth, actualWidth - sourceX));
-        int copyHeight = Math.max(0, Math.min(frameHeight, actualHeight - sourceY));
+        int copyWidth = Math.clamp(actualWidth - sourceX, 0, frameWidth);
+        int copyHeight = Math.clamp(actualHeight - sourceY, 0, frameHeight);
         if (copyWidth > 0 && copyHeight > 0) {
             frame.getPixelWriter().setPixels(0, 0, copyWidth, copyHeight, reader, sourceX, sourceY);
         }
