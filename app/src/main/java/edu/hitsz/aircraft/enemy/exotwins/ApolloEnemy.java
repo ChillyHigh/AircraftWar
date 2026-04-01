@@ -1,11 +1,13 @@
-package edu.hitsz.aircraft.enemy;
+package edu.hitsz.aircraft.enemy.exotwins;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraft.enemy.Ribbon;
 import edu.hitsz.basic.SpriteAnimator;
+import edu.hitsz.bullet.ApolloFireballBullet;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
 import javafx.scene.canvas.GraphicsContext;
@@ -23,6 +25,13 @@ public class ApolloEnemy extends AbstractEnemy {
         NORMAL,
         TWIN,
         DASH,
+    }
+
+    private enum ApolloDashState {
+        DASH_HOVER,
+        DASH_REEL_BACK,
+        DASHING,
+        SLOW_DOWN,
     }
 
     private State state = State.INIT;
@@ -142,7 +151,7 @@ public class ApolloEnemy extends AbstractEnemy {
 
     /**
      * Manager调用，用来管理Apollo和Artemis的行为切换<br>
-     * 
+     *
      * @param targetX
      * @param targetY
      * @param lookX
@@ -191,7 +200,9 @@ public class ApolloEnemy extends AbstractEnemy {
 
     @Override
     public List<BaseBullet> shoot() {
-        return this.bullets;
+        List<BaseBullet> firedBullets = new ArrayList<>(bullets);
+        bullets.clear();
+        return firedBullets;
     }
 
     @Override
@@ -222,7 +233,7 @@ public class ApolloEnemy extends AbstractEnemy {
         } else {
             nextState = State.INIT;
         }
-        if (this.state != State.DASH && nextState == State.DASH) {
+        if (this.state == State.DASH) {
             double dashRotationRad = Math.atan2(dashVelocityY, dashVelocityX) + Math.PI / 2.0;
             leftRibbon.resetHistory(locationX, locationY, dashRotationRad);
             rightRibbon.resetHistory(locationX, locationY, dashRotationRad);
@@ -233,5 +244,15 @@ public class ApolloEnemy extends AbstractEnemy {
     public void setDashVelocity(double vx, double vy) {
         this.dashVelocityX = vx;
         this.dashVelocityY = vy;
+    }
+
+    public void queuePlasmaBulletByAngle(double angleRad, double bulletSpeed, int bulletPower) {
+        int muzzleDistance = 22;
+        int bulletX = locationX + (int) Math.round(Math.cos(angleRad) * muzzleDistance);
+        int bulletY = locationY + (int) Math.round(Math.sin(angleRad) * muzzleDistance);
+        int bulletSpeedX = (int) Math.round(Math.cos(angleRad) * bulletSpeed);
+        int bulletSpeedY = (int) Math.round(Math.sin(angleRad) * bulletSpeed);
+
+        bullets.add(new ApolloFireballBullet(bulletX, bulletY, bulletSpeedX, bulletSpeedY, bulletPower));
     }
 }

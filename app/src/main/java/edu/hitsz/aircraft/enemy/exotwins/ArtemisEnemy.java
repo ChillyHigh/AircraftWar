@@ -1,11 +1,13 @@
-package edu.hitsz.aircraft.enemy;
+package edu.hitsz.aircraft.enemy.exotwins;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraft.enemy.Ribbon;
 import edu.hitsz.basic.SpriteAnimator;
+import edu.hitsz.bullet.ArtemisLaserBullet;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
 import javafx.scene.canvas.GraphicsContext;
@@ -141,7 +143,7 @@ public class ArtemisEnemy extends AbstractEnemy {
 
     /**
      * Manager调用，用来管理Apollo和Artemis的行为切换<br>
-     * 
+     *
      * @param targetX
      * @param targetY
      * @param lookX
@@ -190,7 +192,9 @@ public class ArtemisEnemy extends AbstractEnemy {
 
     @Override
     public List<BaseBullet> shoot() {
-        return this.bullets;
+        List<BaseBullet> firedBullets = new ArrayList<>(bullets);
+        bullets.clear();
+        return firedBullets;
     }
 
     @Override
@@ -232,5 +236,19 @@ public class ArtemisEnemy extends AbstractEnemy {
     public void setDashVelocity(double vx, double vy) {
         this.dashVelocityX = vx;
         this.dashVelocityY = vy;
+    }
+
+    public void queueBulletByAngle(double angleRad, double bulletSpeed, int bulletPower) {
+        int muzzleDistance = 18; // 子弹从飞机到枪口的距离
+        double bulletX = locationX + Math.cos(angleRad) * muzzleDistance;
+        double bulletY = locationY + Math.sin(angleRad) * muzzleDistance;
+        queueBulletFromPosition(bulletX, bulletY, angleRad, bulletSpeed, bulletPower);
+    }
+
+    public void queueBulletFromPosition(double spawnX, double spawnY, double angleRad, double bulletSpeed, int bulletPower) {
+        int bulletSpeedX = (int) Math.round(Math.cos(angleRad) * bulletSpeed);
+        int bulletSpeedY = (int) Math.round(Math.sin(angleRad) * bulletSpeed);
+
+        bullets.add(new ArtemisLaserBullet((int) Math.round(spawnX), (int) Math.round(spawnY), bulletSpeedX, bulletSpeedY, bulletPower));
     }
 }
