@@ -2,6 +2,7 @@ package edu.hitsz.basic;
 
 import javafx.scene.canvas.GraphicsContext;
 
+//TODO: 整合到AbstractFlyingObject
 public interface CustomRenderable {
     void render(GraphicsContext gc);
 
