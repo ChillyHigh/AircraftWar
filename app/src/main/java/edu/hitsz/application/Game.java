@@ -4,11 +4,13 @@ import edu.hitsz.aircraft.*;
 import edu.hitsz.aircraft.enemy.EliteEnemy;
 import edu.hitsz.aircraft.enemy.EliteProEnemy;
 import edu.hitsz.aircraft.enemy.ExoTwinsManager;
-import edu.hitsz.aircraft.enemy.ApolloEnemy;
-import edu.hitsz.aircraft.enemy.ArtemisEnemy;
+import edu.hitsz.aircraft.enemy.exotwins.ApolloEnemy;
+import edu.hitsz.aircraft.enemy.exotwins.ArtemisEnemy;
 
 import edu.hitsz.aircraft.enemy.MobEnemy;
+import edu.hitsz.basic.CustomRenderable;
 import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.bullet.ArtemisRayBullet;
 import edu.hitsz.factory.PropFactory;
 import edu.hitsz.prop.BaseProp;
 import edu.hitsz.basic.AbstractFlyingObject;
@@ -222,11 +224,6 @@ public class Game extends Pane {
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
                 enemyBullets.addAll(enemyAircraft.shoot());
             }
-            // Boss机射击
-            for (AbstractAircraft bossAircraft : bossAircrafts) {
-                enemyBullets.addAll(bossAircraft.shoot());
-            }
-
         }
     }
 
@@ -246,7 +243,10 @@ public class Game extends Pane {
         for (AbstractAircraft bossAircraft : bossAircrafts) {
             bossAircraft.forward();
         }
-        exoTwinsManager.update(heroAircraft);
+        exoTwinsManager.update();
+        for (AbstractAircraft bossAircraft : bossAircrafts) {
+            enemyBullets.addAll(bossAircraft.shoot());
+        }
     }
 
     /**
@@ -259,6 +259,9 @@ public class Game extends Pane {
         // 敌机子弹攻击英雄
         for (BaseBullet bullet : enemyBullets) {
             if (bullet.notValid()) {
+                continue;
+            }
+            if (bullet instanceof ArtemisRayBullet) {
                 continue;
             }
             if (heroAircraft.crash(bullet)) {
@@ -353,7 +356,7 @@ public class Game extends Pane {
     private void render() {
         // 背景滚动
         gc.clearRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
-
+        WindowShaker.updateScreenShake();
         gc.save();
         gc.translate(WindowShaker.getShakeOffsetX(), WindowShaker.getShakeOffsetY());
 
@@ -392,6 +395,10 @@ public class Game extends Pane {
         }
 
         for (AbstractFlyingObject object : objects) {
+            if (object instanceof CustomRenderable customRenderable) {
+                customRenderable.render(gc);
+                continue;
+            }
             Image image = object.getImage();
             if (image == null) {
                 throw new IllegalStateException(
