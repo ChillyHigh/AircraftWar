@@ -48,6 +48,10 @@ public class ImageManager {
     public static Image ARTEMIS_IMAGE;
     public static Image APOLLP_GLOW_IMAGE;
     public static Image ARTEMIS_GLOW_IMAGE;
+    public static Image ARTEMIS_LASER_IMAGE;
+    public static Image APOLLO_FIREBALL_IMAGE;
+    public static Image EXO_MUZZLE_BLOOM_IMAGE;
+    public static Image EXO_MUZZLE_FLARE_IMAGE;
 
     public static Image PROP_BLOOD_IMAGE;
     public static Image PROP_BOMB_IMAGE;
@@ -79,6 +83,10 @@ public class ImageManager {
             APOLLP_GLOW_IMAGE = loadFromResources("/images/ApolloGlow.png");
             ARTEMIS_IMAGE = loadFromResources("/images/Artemis.png");
             ARTEMIS_GLOW_IMAGE = loadFromResources("/images/ArtemisGlow.png");
+            ARTEMIS_LASER_IMAGE = loadFromResources("/images/ArtemisLaser.png");
+            APOLLO_FIREBALL_IMAGE = loadFromResources("/images/ApolloFireball.png");
+            EXO_MUZZLE_BLOOM_IMAGE = loadFromResources("/images/ExoMuzzleBloom.png");
+            EXO_MUZZLE_FLARE_IMAGE = loadFromResources("/images/ExoMuzzleFlare.png");
 
             CLOUD_DENSITY_MAP = loadFromResources("/textures/CloudDensityMap.png");
             TECHY_NOISE = loadFromResources("/textures/TechyNoise.png");
@@ -123,6 +131,10 @@ public class ImageManager {
             case "artemis" -> ARTEMIS_IMAGE;
             case "apollo_glow" -> APOLLP_GLOW_IMAGE;
             case "artemis_glow" -> ARTEMIS_GLOW_IMAGE;
+            case "artemis_laser" -> ARTEMIS_LASER_IMAGE;
+            case "apollo_fireball" -> APOLLO_FIREBALL_IMAGE;
+            case "exo_muzzle_bloom" -> EXO_MUZZLE_BLOOM_IMAGE;
+            case "exo_muzzle_flare" -> EXO_MUZZLE_FLARE_IMAGE;
             default -> null;
         };
     }
