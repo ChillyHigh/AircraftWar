@@ -32,6 +32,11 @@ public class AudioManager {
     public static final String LASER_CANNON = "/extraSounds/Splatshot.wav";
     public static final String EXO_TWINS_DASH_TELEGRAPH = "/extraSounds/ArtemisApolloDashTelegraph.wav";
     public static final String EXO_TWINS_DASH = "/extraSounds/ArtemisApolloDash.wav";
+    public static final String EXO_LASER_SHOOT = "/extraSounds/ExoLaserShoot.wav";
+    public static final String EXO_PLASMA_SHOOT = "/extraSounds/ExoPlasmaShoot.wav";
+    public static final String ARTEMIS_SPIN_LASERBEAM = "/extraSounds/ArtemisSpinLaserbeam.wav";
+    public static final String GATLING_LASER_FIRE_START = "/extraSounds/GatlingLaserFireStart.wav";
+    public static final String GATLING_LASER_FIRE_LOOP = "/extraSounds/GatlingLaserFireLoop.wav";
 
     /**
      * 播放背景音乐，循环播放<br>
