@@ -6,16 +6,29 @@ import java.util.List;
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.aircraft.enemy.Ribbon;
+import edu.hitsz.application.ImageManager;
 import edu.hitsz.basic.SpriteAnimator;
 import edu.hitsz.bullet.ArtemisLaserBullet;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
+import edu.hitsz.bullet.ArtemisRayBullet;
+import edu.hitsz.shaderCPU.ArtemisRayTelegraphShader;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public class ArtemisEnemy extends AbstractEnemy {
+    private static final double EXOTHERMAL_MUZZLE_DISTANCE = 54.0;
+    private static final double EXOTHERMAL_TELEGRAPH_LENGTH = 1000.0;
+    private static final int EXOTHERMAL_TELEGRAPH_SHADER_WIDTH = 512;
+    private static final int EXOTHERMAL_TELEGRAPH_SHADER_HEIGHT = 64;
+
+    private enum PostRenderEffect {
+        NONE,
+        EXOTHERMAL_CHARGE_UP,
+        EXOTHERMAL_GLEAM,
+    }
 
     private final SpriteAnimator animator;
     private final SpriteAnimator animatorGlow;
@@ -45,6 +58,11 @@ public class ArtemisEnemy extends AbstractEnemy {
     private final Ribbon rightRibbon = new Ribbon(1, 0.5, Color.rgb(255, 126, 70), Color.rgb(0, 115, 255));
 
     private final List<BaseBullet> bullets = new ArrayList<>();
+    private final ArtemisRayTelegraphShader exothermalTelegraphShader =
+            new ArtemisRayTelegraphShader(EXOTHERMAL_TELEGRAPH_SHADER_WIDTH, EXOTHERMAL_TELEGRAPH_SHADER_HEIGHT);
+    private PostRenderEffect postRenderEffect = PostRenderEffect.NONE;
+    private double postRenderEffectProgress = 0.0;
+    private int postRenderEffectTimer = 0;
 
     public ArtemisEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
@@ -83,7 +101,6 @@ public class ArtemisEnemy extends AbstractEnemy {
         animatorGlow.update();
         leftRibbon.update(locationX, locationY, Math.toRadians(rotation));
         rightRibbon.update(locationX, locationY, Math.toRadians(rotation));
-
     }
 
     /**
@@ -212,6 +229,8 @@ public class ArtemisEnemy extends AbstractEnemy {
         gc.drawImage(animatorGlow.getCurrentImage(), -width * scale / 2.0, -height * scale / 2.0,
                 width * scale, height * scale);
         gc.restore();
+
+        renderExothermalPostEffect(gc);
     }
 
     public void setState(int state) {
@@ -251,4 +270,152 @@ public class ArtemisEnemy extends AbstractEnemy {
 
         bullets.add(new ArtemisLaserBullet((int) Math.round(spawnX), (int) Math.round(spawnY), bulletSpeedX, bulletSpeedY, bulletPower));
     }
+
+    public void queueExothermalDisintegrationRay(int bulletPower) {
+        bullets.add(new ArtemisRayBullet(this, bulletPower));
+    }
+
+    public void clearExothermalPostRenderEffect() {
+        postRenderEffect = PostRenderEffect.NONE;
+        postRenderEffectProgress = 0.0;
+        postRenderEffectTimer = 0;
+    }
+
+    public void setExothermalChargeUpEffect(double progress) {
+        updatePostRenderEffect(PostRenderEffect.EXOTHERMAL_CHARGE_UP, progress);
+    }
+
+    public void setExothermalGleamEffect(double progress) {
+        updatePostRenderEffect(PostRenderEffect.EXOTHERMAL_GLEAM, progress);
+    }
+
+    public double getExothermalMuzzleX() {
+        return locationX + Math.cos(getForwardAngleRad()) * EXOTHERMAL_MUZZLE_DISTANCE;
+    }
+
+    public double getExothermalMuzzleY() {
+        return locationY + Math.sin(getForwardAngleRad()) * EXOTHERMAL_MUZZLE_DISTANCE;
+    }
+
+    public double getForwardAngleRad() {
+        return Math.toRadians(rotation - 90.0);
+    }
+
+    private void updatePostRenderEffect(PostRenderEffect effect, double progress) {
+        if (effect == PostRenderEffect.NONE) {
+            clearExothermalPostRenderEffect();
+            return;
+        }
+
+        if (postRenderEffect != effect) {
+            postRenderEffectTimer = 0;
+        } else {
+            postRenderEffectTimer++;
+        }
+        postRenderEffect = effect;
+        postRenderEffectProgress = Math.clamp(progress, 0.0, 1.0);
+    }
+
+    private void renderExothermalPostEffect(GraphicsContext gc) {
+        switch (postRenderEffect) {
+            case NONE -> {
+                return;
+            }
+            case EXOTHERMAL_CHARGE_UP -> drawExothermalChargeUp(gc);
+            case EXOTHERMAL_GLEAM -> drawExothermalGleam(gc);
+        }
+    }
+
+    private void drawExothermalChargeUp(GraphicsContext gc) {
+        double chargeInterpolant = inverseLerpBump(0.0, 0.24, 0.9, 1.0, postRenderEffectProgress);
+        if (chargeInterpolant <= 1e-3) {
+            return;
+        }
+
+        double startX = getExothermalMuzzleX();
+        double startY = getExothermalMuzzleY();
+        double angle = getForwardAngleRad();
+        double beamWidth = chargeInterpolant * 5.0;
+        double beamHeight = beamWidth * 2.0;
+        exothermalTelegraphShader.renderFrame(postRenderEffectTimer / 60.0, chargeInterpolant);
+
+        gc.save();
+        gc.setGlobalBlendMode(BlendMode.ADD);
+        gc.translate(startX, startY);
+        gc.rotate(Math.toDegrees(angle));
+        gc.drawImage(
+                exothermalTelegraphShader.getOutputImage(),
+                0.0,
+                -beamHeight * 0.5,
+                EXOTHERMAL_TELEGRAPH_LENGTH,
+                beamHeight);
+        gc.restore();
+    }
+
+    private void drawExothermalGleam(GraphicsContext gc) {
+        double gleamInterpolant = inverseLerp(0.0, 0.7, postRenderEffectProgress);
+        if (gleamInterpolant <= 1e-3) {
+            return;
+        }
+
+        double flareOpacity = inverseLerp(1.0, 0.75, gleamInterpolant);
+        double flareScale = Math.pow(convert01To010(gleamInterpolant), 1.4) * 1.9 + 0.1;
+        flareScale *= 0.4;
+        double flareRotation = smoothStep(0.0, Math.PI * 2.0, Math.pow(gleamInterpolant, 0.2)) + Math.PI / 4.0;
+
+        Image bloom = ImageManager.EXO_MUZZLE_BLOOM_IMAGE;
+        Image flare = ImageManager.EXO_MUZZLE_FLARE_IMAGE;
+        double drawX = getExothermalMuzzleX();
+        double drawY = getExothermalMuzzleY();
+
+        gc.save();
+        gc.setGlobalBlendMode(BlendMode.ADD);
+
+        gc.setGlobalAlpha(flareOpacity * 0.30);
+        drawCenteredImage(gc, bloom, drawX, drawY, flareScale * 1.9, 0.0);
+
+        gc.setGlobalAlpha(flareOpacity * 0.54);
+        drawCenteredImage(gc, bloom, drawX, drawY, flareScale, 0.0);
+
+        gc.setGlobalAlpha(flareOpacity);
+        drawCenteredImage(gc, flare, drawX, drawY, flareScale, flareRotation);
+
+        gc.restore();
+    }
+
+    private void drawCenteredImage(GraphicsContext gc, Image image, double centerX, double centerY, double scaleFactor, double rotationRad) {
+        gc.save();
+        gc.translate(centerX, centerY);
+        gc.rotate(Math.toDegrees(rotationRad));
+        gc.drawImage(
+                image,
+                -image.getWidth() * scaleFactor * 0.5,
+                -image.getHeight() * scaleFactor * 0.5,
+                image.getWidth() * scaleFactor,
+                image.getHeight() * scaleFactor);
+        gc.restore();
+    }
+
+
+    private double inverseLerp(double start, double end, double value) {
+        if (Math.abs(end - start) < 1e-6) {
+            return 0.0;
+        }
+        return Math.clamp((value - start) / (end - start), 0.0, 1.0);
+    }
+
+    private double inverseLerpBump(double startFadeIn, double endFadeIn, double startFadeOut, double endFadeOut, double value) {
+        return inverseLerp(startFadeIn, endFadeIn, value) * inverseLerp(endFadeOut, startFadeOut, value);
+    }
+
+    private double convert01To010(double value) {
+        return 1.0 - Math.abs(Math.clamp(value, 0.0, 1.0) * 2.0 - 1.0);
+    }
+
+    private double smoothStep(double start, double end, double value) {
+        double t = Math.clamp(value, 0.0, 1.0);
+        t = t * t * (3.0 - 2.0 * t);
+        return start + (end - start) * t;
+    }
+
 }
