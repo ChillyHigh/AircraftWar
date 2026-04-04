@@ -34,7 +34,7 @@ public class Game extends Pane {
     private int backGroundTop = 0;
 
     // 游戏逻辑更新间隔
-    private int timeInterval = 40;
+    private int timeInterval = 20;
 
     private final HeroAircraft heroAircraft;
     private final List<AbstractAircraft> enemyAircrafts;
@@ -208,7 +208,7 @@ public class Game extends Pane {
         if (shootCounter >= shootCycle) {
             shootCounter = 0;
             // 英雄机射击
-            AudioManager.playSound(AudioManager.LASER_CANNON);
+//            AudioManager.playSound(AudioManager.LASER_CANNON);
             heroBullets.addAll(heroAircraft.shoot());
             // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
@@ -343,36 +343,24 @@ public class Game extends Pane {
         }
 
         // 先绘制子弹，后绘制飞机
-        paintImageWithPositionRevised(enemyBullets);
-        paintImageWithPositionRevised(heroBullets);
-        paintImageWithPositionRevised(enemyAircrafts);
+        renderObjects(enemyBullets);
+        renderObjects(heroBullets);
+        renderObjects(enemyAircrafts);
 
-        // TODO: 绘制道具
-        paintImageWithPositionRevised(props);
+        renderObjects(props);
         // 绘制英雄机
-        gc.drawImage(
-                ImageManager.HERO_IMAGE,
-                heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2.0,
-                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2.0);
+        heroAircraft.render(gc);
 
         paintScoreAndLife();
     }
 
-    private void paintImageWithPositionRevised(List<? extends AbstractFlyingObject> objects) {
+    private void renderObjects(List<? extends AbstractFlyingObject> objects) {
         if (objects.isEmpty()) {
             return;
         }
 
         for (AbstractFlyingObject object : objects) {
-            Image image = object.getImage();
-            if (image == null) {
-                throw new IllegalStateException(
-                        objects.getClass().getName() + " has object without image: " + object.getClass().getName());
-            }
-            gc.drawImage(
-                    image,
-                    object.getLocationX() - image.getWidth() / 2.0,
-                    object.getLocationY() - image.getHeight() / 2.0);
+            object.render(gc);
         }
     }
 
