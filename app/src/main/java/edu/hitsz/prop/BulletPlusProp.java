@@ -3,7 +3,7 @@ package edu.hitsz.prop;
 import edu.hitsz.aircraft.HeroAircraft;
 
 public class BulletPlusProp extends BaseProp {
-    public BulletPlusProp(int locationX, int locationY, int speedX, int speedY) {
+    public BulletPlusProp(double locationX, double locationY, double speedX, double speedY) {
         super(locationX, locationY, speedX, speedY);
     }
 

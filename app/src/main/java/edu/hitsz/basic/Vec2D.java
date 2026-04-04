@@ -71,4 +71,8 @@ public class Vec2D {
         this.y *= scale;
         return this;
     }
+
+    public static double distance(Vec2D a, Vec2D b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+    }
 }

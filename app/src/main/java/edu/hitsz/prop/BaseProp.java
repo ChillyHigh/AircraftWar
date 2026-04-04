@@ -6,7 +6,7 @@ import edu.hitsz.basic.AbstractFlyingObject;
 
 public abstract class BaseProp extends AbstractFlyingObject {
 
-    public BaseProp(int locationX, int locationY, int speedX, int speedY) {
+    public BaseProp(double locationX, double locationY, double speedX, double speedY) {
         super(locationX, locationY, speedX, speedY);
     }
 
@@ -15,16 +15,13 @@ public abstract class BaseProp extends AbstractFlyingObject {
         super.forward();
 
         // 判定 x 轴出界
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
+        if (location.getX() <= 0 || location.getX() >= Main.WINDOW_WIDTH) {
             vanish();
         }
 
         // 判定 y 轴出界
-        if (speedY > 0 && locationY >= Main.WINDOW_HEIGHT) {
+        if (location.getY() >= Main.WINDOW_HEIGHT || location.getY() <= 0) {
             // 向下飞行出界
-            vanish();
-        } else if (locationY <= 0) {
-            // 向上飞行出界
             vanish();
         }
     }

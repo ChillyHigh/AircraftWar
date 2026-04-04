@@ -3,7 +3,7 @@ package edu.hitsz.prop;
 import edu.hitsz.aircraft.HeroAircraft;
 
 public class BloodProp extends BaseProp {
-    public BloodProp(int locationX, int locationY, int speedX, int speedY) {
+    public BloodProp(double locationX, double locationY, double speedX, double speedY) {
         super(locationX, locationY, speedX, speedY);
     }
 
