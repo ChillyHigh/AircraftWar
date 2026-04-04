@@ -18,10 +18,12 @@ public abstract class AbstractFlyingObject {
     //locationX,locationY为图片中心位置坐标
     protected int locationX;
     protected int locationY;
+    protected Vec2D location;
 
     // x,y轴移动速度
     protected int speedX;
     protected int speedY;
+    protected Vec2D speed;
 
     //图片, null 表示未设置
     protected Image image = null;
@@ -38,11 +40,17 @@ public abstract class AbstractFlyingObject {
     public AbstractFlyingObject() {
     }
 
+    @Deprecated
     public AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY) {
         this.locationX = locationX;
         this.locationY = locationY;
         this.speedX = speedX;
         this.speedY = speedY;
+    }
+
+    public AbstractFlyingObject(Vec2D location, Vec2D speed) {
+        this.location = location;
+        this.speed = speed;
     }
 
     /**
@@ -52,6 +60,13 @@ public abstract class AbstractFlyingObject {
     public void forward() {
         locationX += speedX;
         locationY += speedY;
+        location.add(speed);
+        handleBoundary();
+    }
+    /**
+     * 遇到边界的处理方法
+     */
+    protected void handleBoundary() {
         if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
             // 横向超出边界后反向
             speedX = -speedX;
@@ -90,19 +105,30 @@ public abstract class AbstractFlyingObject {
                 && y - ( fHeight/fFactor+this.getHeight()/factor )/2 < locationY;
     }
 
+    @Deprecated
     public int getLocationX() {
         return locationX;
     }
 
+    @Deprecated
     public int getLocationY() {
         return locationY;
     }
 
+    public Vec2D getLocation() {
+        return location;
+    }
+    @Deprecated
     public void setLocation(double locationX, double locationY){
         this.locationX = (int) locationX;
         this.locationY = (int) locationY;
     }
 
+    public void setLocation(Vec2D location) {
+        this.location = location;
+    }
+
+    @Deprecated
     public int getSpeedY() {
         return speedY;
     }
