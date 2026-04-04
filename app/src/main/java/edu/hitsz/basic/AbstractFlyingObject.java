@@ -4,9 +4,8 @@ import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.application.ImageManager;
 import edu.hitsz.application.Main;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-
-import java.awt.image.BufferedImage;
 
 /**
  * 可飞行对象的父类
@@ -15,15 +14,17 @@ import java.awt.image.BufferedImage;
  */
 public abstract class AbstractFlyingObject {
 
-    //locationX,locationY为图片中心位置坐标
-    protected int locationX;
-    protected int locationY;
+    //图片中心位置坐标
     protected Vec2D location;
 
-    // x,y轴移动速度
-    protected int speedX;
-    protected int speedY;
+    // 移动速度
     protected Vec2D speed;
+
+    // 对象的缩放大小
+    protected double scale = 1.0;
+
+    // 对象的旋转角度，单位：角度
+    protected double rotation = 0.0;
 
     //图片, null 表示未设置
     protected Image image = null;
@@ -40,38 +41,28 @@ public abstract class AbstractFlyingObject {
     public AbstractFlyingObject() {
     }
 
-    @Deprecated
-    public AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY) {
-        this.locationX = locationX;
-        this.locationY = locationY;
-        this.speedX = speedX;
-        this.speedY = speedY;
-    }
-
-    public AbstractFlyingObject(Vec2D location, Vec2D speed) {
-        this.location = location;
-        this.speed = speed;
+    public AbstractFlyingObject(double locationX, double locationY, double speedX, double speedY) {
+        this.location = new Vec2D(locationX, locationY);
+        this.speed = new Vec2D(speedX, speedY);
     }
 
     /**
      * 可飞行对象根据速度移动
-     * 若飞行对象触碰到横向边界，横向速度反向
      */
     public void forward() {
-        locationX += speedX;
-        locationY += speedY;
         location.add(speed);
-        handleBoundary();
+//        handleBoundary();
     }
-    /**
-     * 遇到边界的处理方法
-     */
-    protected void handleBoundary() {
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
-            // 横向超出边界后反向
-            speedX = -speedX;
-        }
-    }
+
+//    /**
+//     * 遇到边界的处理方法
+//     */
+//    protected void handleBoundary() {
+//        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
+//            // 横向超出边界后反向
+//            speedX = -speedX;
+//        }
+//    }
 
     /**
      * 碰撞检测，当对方坐标进入我方范围，判定我方击中<br>
@@ -94,43 +85,50 @@ public abstract class AbstractFlyingObject {
         int fFactor = flyingObject instanceof AbstractAircraft ? 2 : 1;//对方
 
         //对方坐标、宽度、高度
-        int x = flyingObject.getLocationX();
-        int y = flyingObject.getLocationY();
+        double x = flyingObject.getLocationX();
+        double y = flyingObject.getLocationY();
         int fWidth = flyingObject.getWidth();
         int fHeight = flyingObject.getHeight();
 
-        return x + (fWidth+this.getWidth())/2 > locationX
-                && x - (fWidth+this.getWidth())/2 < locationX
-                && y + ( fHeight/fFactor+this.getHeight()/factor )/2 > locationY
-                && y - ( fHeight/fFactor+this.getHeight()/factor )/2 < locationY;
+        return x + (fWidth+this.getWidth())/2 > location.getX()
+                && x - (fWidth+this.getWidth())/2 < location.getX()
+                && y + ( fHeight/fFactor+this.getHeight()/factor )/2 > location.getY()
+                && y - ( fHeight/fFactor+this.getHeight()/factor )/2 < location.getY();
     }
 
-    @Deprecated
-    public int getLocationX() {
-        return locationX;
+    public double getLocationX() {
+        return location.getX();
     }
 
-    @Deprecated
-    public int getLocationY() {
-        return locationY;
+    public double getLocationY() {
+        return location.getY();
     }
 
     public Vec2D getLocation() {
         return location;
     }
-    @Deprecated
+
     public void setLocation(double locationX, double locationY){
-        this.locationX = (int) locationX;
-        this.locationY = (int) locationY;
+        this.location.set(locationX, locationY);
     }
 
-    public void setLocation(Vec2D location) {
-        this.location = location;
+
+    public AbstractFlyingObject setSpeed(Vec2D speed) {
+        this.speed = speed;
+        return this;
     }
 
-    @Deprecated
-    public int getSpeedY() {
-        return speedY;
+    public AbstractFlyingObject setSpeed(double speedX, double speedY) {
+        this.speed.set(speedX, speedY);
+        return this;
+    }
+
+    public double getSpeedX() {
+        return speed.getX();
+    }
+
+    public double getSpeedY() {
+        return speed.getY();
     }
 
     public Image getImage() {
@@ -174,6 +172,36 @@ public abstract class AbstractFlyingObject {
      */
     public void vanish() {
         isValid = false;
+    }
+
+    public void render(GraphicsContext gc) {
+        if (notValid()){
+            return;
+        }
+        Image image = getImage();
+        if (image == null) {
+            throw new IllegalStateException(this.getClass().getName() + " has no image!");
+        }
+        drawImage(gc, image, location, rotation, scale);
+    }
+
+    /**
+     * 绘制贴图，包含旋转和缩放
+     * @param gc 图形上下文
+     * @param image 图片
+     * @param location 位置
+     * @param angle 旋转角度，单位：角度
+     * @param scale 缩放比例
+     */
+    public static void drawImage(GraphicsContext gc, Image image, Vec2D location, double angle, double scale) {
+        double drawWidth = image.getWidth() * scale;
+        double drawHeight = image.getHeight() * scale;
+
+        gc.save();
+        gc.translate(location.getX(), location.getY());
+        gc.rotate(angle);
+        gc.drawImage(image, -drawWidth / 2.0, -drawHeight / 2.0, drawWidth, drawHeight);
+        gc.restore();
     }
 
 }
