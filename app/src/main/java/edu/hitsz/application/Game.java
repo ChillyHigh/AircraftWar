@@ -255,7 +255,7 @@ public class Game extends Pane {
                 // 英雄机撞击到道具
                 // 道具生效
                 AudioManager.playSound(AudioManager.GET_SUPPLY);
-                prop.activate(heroAircraft);
+                prop.activate();
                 prop.vanish();
             }
         }

@@ -8,7 +8,7 @@ public class BulletPlusProp extends BaseProp {
     }
 
     @Override
-    public void activate(HeroAircraft heroAircraft) {
+    public void activate() {
         // 英雄机增加子弹数量
         System.out.println("FirePlusSupply active!");
     }

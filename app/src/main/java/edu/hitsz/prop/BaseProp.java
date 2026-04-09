@@ -27,7 +27,7 @@ public abstract class BaseProp extends AbstractFlyingObject {
     }
 
     // 道具被英雄机获得后激活效果
-    public void activate(HeroAircraft heroAircraft) {
+    public void activate() {
     }
 
 }
