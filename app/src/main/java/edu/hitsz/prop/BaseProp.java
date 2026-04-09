@@ -15,12 +15,12 @@ public abstract class BaseProp extends AbstractFlyingObject {
         super.forward();
 
         // 判定 x 轴出界
-        if (location.getX() <= 0 || location.getX() >= Main.WINDOW_WIDTH) {
+        if (locationX <= -getWidth() * scale / 2.0 || locationX >= Main.WINDOW_WIDTH + getWidth() * scale / 2.0) {
             vanish();
         }
 
         // 判定 y 轴出界
-        if (location.getY() >= Main.WINDOW_HEIGHT || location.getY() <= 0) {
+        if (locationY >= Main.WINDOW_HEIGHT + getHeight() * scale / 2.0 || locationY <= -getHeight() * scale / 2.0) {
             // 向下飞行出界
             vanish();
         }

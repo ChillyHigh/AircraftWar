@@ -21,15 +21,15 @@ public abstract class BaseBullet extends AbstractFlyingObject {
         super.forward();
 
         // 判定 x 轴出界
-        if (location.getX() <= 0 || location.getX() >= Main.WINDOW_WIDTH) {
+        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
             vanish();
         }
 
         // 判定 y 轴出界
-        if (speed.getY() > 0 && location.getY() >= Main.WINDOW_HEIGHT) {
+        if (speedY > 0 && locationY >= Main.WINDOW_HEIGHT) {
             // 向下飞行出界
             vanish();
-        } else if (location.getY() <= 0) {
+        } else if (locationY <= 0) {
             // 向上飞行出界
             vanish();
         }

@@ -15,10 +15,12 @@ import javafx.scene.image.Image;
 public abstract class AbstractFlyingObject {
 
     //图片中心位置坐标
-    protected Vec2D location;
+    protected double locationX;
+    protected double locationY;
 
     // 移动速度
-    protected Vec2D speed;
+    protected double speedX;
+    protected double speedY;
 
     // 对象的缩放大小
     protected double scale = 1.0;
@@ -38,19 +40,24 @@ public abstract class AbstractFlyingObject {
     //有效（生存）标记，标记为 false的对象会在下次刷新时清除
     protected boolean isValid = true;
 
+    protected HitBox hitBox;
+
     public AbstractFlyingObject() {
     }
 
     public AbstractFlyingObject(double locationX, double locationY, double speedX, double speedY) {
-        this.location = new Vec2D(locationX, locationY);
-        this.speed = new Vec2D(speedX, speedY);
+        this.locationX = locationX;
+        this.locationY = locationY;
+        this.speedX = speedX;
+        this.speedY = speedY;
     }
 
     /**
      * 可飞行对象根据速度移动
      */
     public void forward() {
-        location.add(speed);
+        locationX += speedX;
+        locationY += speedY;
 //        handleBoundary();
     }
 
@@ -80,55 +87,56 @@ public abstract class AbstractFlyingObject {
      * @return true: 我方被击中; false 我方未被击中
      */
     public boolean crash(AbstractFlyingObject flyingObject) {
-        // 缩放因子，用于控制 y轴方向区域范围
-        int factor = this instanceof AbstractAircraft ? 2 : 1; //我方
-        int fFactor = flyingObject instanceof AbstractAircraft ? 2 : 1;//对方
+        return this.getHitBox().isCollidingWith(flyingObject.getHitBox());
+    }
 
-        //对方坐标、宽度、高度
-        double x = flyingObject.getLocationX();
-        double y = flyingObject.getLocationY();
-        int fWidth = flyingObject.getWidth();
-        int fHeight = flyingObject.getHeight();
+    public HitBox getHitBox() {
+        if (hitBox == null) {
+            hitBox = createDefaultHitBox();
+        }
+        return hitBox;
+    }
 
-        return x + (fWidth+this.getWidth())/2 > location.getX()
-                && x - (fWidth+this.getWidth())/2 < location.getX()
-                && y + ( fHeight/fFactor+this.getHeight()/factor )/2 > location.getY()
-                && y - ( fHeight/fFactor+this.getHeight()/factor )/2 < location.getY();
+    protected HitBox createDefaultHitBox() {
+        double hitBoxWidth = getWidth() * scale;
+        double hitBoxHeight = getHeight() * scale;
+
+        if (this instanceof AbstractAircraft) {
+            hitBoxHeight /= 2.0;
+        }
+
+        return new HitBox(0, 0, hitBoxWidth, hitBoxHeight, this);
+    }
+
+    protected void setHitBox(HitBox hitBox) {
+        this.hitBox = hitBox;
     }
 
     public double getLocationX() {
-        return location.getX();
+        return locationX;
     }
 
     public double getLocationY() {
-        return location.getY();
-    }
-
-    public Vec2D getLocation() {
-        return location;
+        return locationY;
     }
 
     public void setLocation(double locationX, double locationY){
-        this.location.set(locationX, locationY);
-    }
-
-
-    public AbstractFlyingObject setSpeed(Vec2D speed) {
-        this.speed = speed;
-        return this;
+        this.locationX = locationX;
+        this.locationY = locationY;
     }
 
     public AbstractFlyingObject setSpeed(double speedX, double speedY) {
-        this.speed.set(speedX, speedY);
+        this.speedX = speedX;
+        this.speedY = speedY;
         return this;
     }
 
     public double getSpeedX() {
-        return speed.getX();
+        return speedX;
     }
 
     public double getSpeedY() {
-        return speed.getY();
+        return speedY;
     }
 
     public Image getImage() {
@@ -182,27 +190,28 @@ public abstract class AbstractFlyingObject {
         if (image == null) {
             throw new IllegalStateException(this.getClass().getName() + " has no image!");
         }
-        drawImage(gc, image, location, rotation, scale);
+        drawImage(gc, image, locationX, locationY, rotation, scale);
     }
 
     /**
      * 绘制贴图，包含旋转和缩放
      * @param gc 图形上下文
      * @param image 图片
-     * @param location 位置
+     * @param locationX x 坐标
+     * @param locationY y 坐标
      * @param angle 旋转角度，单位：角度
      * @param scale 缩放比例
      */
-    public static void drawImage(GraphicsContext gc, Image image, Vec2D location, double angle, double scale) {
+    public static void drawImage(GraphicsContext gc, Image image, double locationX, double locationY,
+                                 double angle, double scale) {
         double drawWidth = image.getWidth() * scale;
         double drawHeight = image.getHeight() * scale;
 
         gc.save();
-        gc.translate(location.getX(), location.getY());
+        gc.translate(locationX, locationY);
         gc.rotate(angle);
         gc.drawImage(image, -drawWidth / 2.0, -drawHeight / 2.0, drawWidth, drawHeight);
         gc.restore();
     }
 
 }
-
