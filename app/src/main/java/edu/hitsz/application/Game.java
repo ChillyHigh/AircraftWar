@@ -1,12 +1,12 @@
 package edu.hitsz.application;
 
 import edu.hitsz.aircraft.*;
-import edu.hitsz.aircraft.enemy.EliteEnemy;
-import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
-import edu.hitsz.aircraft.enemy.EliteProEnemy;
-import edu.hitsz.aircraft.enemy.BossEnemy;
-
-import edu.hitsz.aircraft.enemy.MobEnemy;
+import edu.hitsz.factory.BossEnemyFactory;
+import edu.hitsz.factory.EliteEnemyFactory;
+import edu.hitsz.factory.ElitePlusEnemyFactory;
+import edu.hitsz.factory.EliteProEnemyFactory;
+import edu.hitsz.factory.EnemyFactory;
+import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.factory.PropFactory;
 import edu.hitsz.prop.BaseProp;
@@ -38,6 +38,7 @@ public class Game extends Pane {
 
     private final HeroAircraft heroAircraft;
     private final List<AbstractAircraft> enemyAircrafts;
+    private final List<EnemyFactory> enemyFactories;
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
     private final List<BaseProp> props;
@@ -81,6 +82,12 @@ public class Game extends Pane {
         heroAircraft = HeroAircraft.getHeroAircraft();
 
         enemyAircrafts = new LinkedList<>();
+        enemyFactories = List.of(
+                new MobEnemyFactory(),
+                new EliteEnemyFactory(),
+                new ElitePlusEnemyFactory(),
+                new EliteProEnemyFactory(),
+                new BossEnemyFactory());
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
@@ -135,55 +142,8 @@ public class Game extends Pane {
             enemySpawnCounter = 0;
             // 随机产生敌机
             if (enemyAircrafts.size() < enemyMaxNumber) {
-                // 生成0-4之间的随机数
-                int index = (int) (Math.random() * 5);
-                AbstractAircraft enemy = null;
-                // TODO: 之后切换成工厂模式
-                switch (index) {
-                    case 0:
-                        enemy = new MobEnemy(
-                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.MOB_ENEMY_IMAGE.getWidth())),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                10,
-                                30);
-                        break;
-                    case 1:
-                        enemy = new EliteEnemy(
-                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.ELITE_ENEMY_IMAGE.getWidth())),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                5,
-                                30);
-                        break;
-                    case 2:
-                        enemy = new ElitePlusEnemy(
-                                (int) (Math.random()
-                                        * (Main.WINDOW_WIDTH - ImageManager.ELITE_PLUS_ENEMY_IMAGE.getWidth())),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                5,
-                                30);
-                        break;
-                    case 3:
-                        enemy = new EliteProEnemy(
-                                (int) (Math.random()
-                                        * (Main.WINDOW_WIDTH - ImageManager.ELITE_PRO_ENEMY_IMAGE.getWidth())),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                5,
-                                60);
-                        break;
-                    case 4:
-                        enemy = new BossEnemy(
-                                (int) (Math.random() * (Main.WINDOW_WIDTH - ImageManager.BOSS_ENEMY_IMAGE.getWidth())),
-                                (int) (Math.random() * Main.WINDOW_HEIGHT * 0.05),
-                                0,
-                                2,
-                                90);
-                        break;
-                }
-                enemyAircrafts.add(enemy);
+                EnemyFactory enemyFactory = enemyFactories.get((int) (Math.random() * enemyFactories.size()));
+                enemyAircrafts.add(enemyFactory.createEnemy());
             }
         }
         // 飞机射出子弹
