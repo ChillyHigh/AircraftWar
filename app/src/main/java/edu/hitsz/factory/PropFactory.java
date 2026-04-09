@@ -11,6 +11,10 @@ public class PropFactory {
                 return new BulletProp(locationX, locationY, speedX, speedY);
             case "BulletPlus":
                 return new BulletPlusProp(locationX, locationY, speedX, speedY);
+            case "Bomb":
+                return new BombProp(locationX, locationY, speedX, speedY);
+            case "Freeze":
+                return new FreezeProp(locationX, locationY, speedX, speedY);
             default:
                 return null;
         }

@@ -10,9 +10,11 @@ import edu.hitsz.aircraft.enemy.BossEnemy;
 
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
+import edu.hitsz.prop.BombProp;
 import edu.hitsz.prop.BloodProp;
 import edu.hitsz.prop.BulletPlusProp;
 import edu.hitsz.prop.BulletProp;
+import edu.hitsz.prop.FreezeProp;
 import javafx.scene.image.Image;
 
 import java.io.IOException;
@@ -47,6 +49,8 @@ public class ImageManager {
     public static Image PROP_BLOOD_IMAGE;
     public static Image PROP_BOMB_IMAGE;
     public static Image PROP_BULLET_IMAGE;
+    public static Image PROP_BULLET_PLUS_IMAGE;
+    public static Image PROP_FREEZE_IMAGE;
 
     static {
         try {
@@ -65,6 +69,8 @@ public class ImageManager {
             PROP_BLOOD_IMAGE = loadFromResources("/images/prop_blood.png");
             PROP_BOMB_IMAGE = loadFromResources("/images/prop_bomb.png");
             PROP_BULLET_IMAGE = loadFromResources("/images/prop_bullet.png");
+            PROP_BULLET_PLUS_IMAGE = loadFromResources("/images/prop_bulletPlus.png");
+            PROP_FREEZE_IMAGE = loadFromResources("/images/prop_freeze.png");
 
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
@@ -76,8 +82,10 @@ public class ImageManager {
             CLASSNAME_IMAGE_MAP.put(BossEnemy.class.getName(), BOSS_ENEMY_IMAGE);
 
             CLASSNAME_IMAGE_MAP.put(BloodProp.class.getName(), PROP_BLOOD_IMAGE);
-            CLASSNAME_IMAGE_MAP.put(BulletProp.class.getName(), PROP_BOMB_IMAGE);
-            CLASSNAME_IMAGE_MAP.put(BulletPlusProp.class.getName(), PROP_BULLET_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(BombProp.class.getName(), PROP_BOMB_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(BulletProp.class.getName(), PROP_BULLET_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(BulletPlusProp.class.getName(), PROP_BULLET_PLUS_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(FreezeProp.class.getName(), PROP_FREEZE_IMAGE);
 
         } catch (IOException e) {
             e.printStackTrace();

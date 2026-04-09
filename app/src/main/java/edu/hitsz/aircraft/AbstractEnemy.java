@@ -5,6 +5,8 @@ import java.util.List;
 
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.factory.PropFactory;
+import edu.hitsz.prop.BaseProp;
 
 /**
  * 敌机的抽象父类
@@ -23,6 +25,10 @@ public abstract class AbstractEnemy extends AbstractAircraft {
 
     // 子弹威力
     protected int power = 30;
+
+
+    // 可掉落道具类型
+    protected String[] droppablePropTypes = new String[0];
 
     public AbstractEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
@@ -48,5 +54,18 @@ public abstract class AbstractEnemy extends AbstractAircraft {
 
     public int getScore() {
         return score;
+    }
+
+    protected void setDropConfig(String... droppablePropTypes) {
+        this.droppablePropTypes = droppablePropTypes;
+    }
+
+    public BaseProp dropProp() {
+        if (droppablePropTypes.length == 0) {
+            return null;
+        }
+        // 随机选择一个道具类型
+        String propType = droppablePropTypes[(int) (Math.random() * droppablePropTypes.length)];
+        return PropFactory.creatProp(propType, getLocationX(), getLocationY(), 0, 2);
     }
 }

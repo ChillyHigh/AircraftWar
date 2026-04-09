@@ -13,6 +13,7 @@ public class ElitePlusEnemy extends AbstractEnemy {
 
         // 设置精英敌机分数
         super.score = 30;
+        setDropConfig("Blood", "Bullet", "BulletPlus", "Bomb");
     }
 
 }

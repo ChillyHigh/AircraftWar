@@ -13,6 +13,7 @@ public class BossEnemy extends AbstractEnemy {
 
         // 设置Boss敌机分数
         super.score = 100;
+        setDropConfig("Blood", "Bullet", "BulletPlus", "Bomb", "Freeze");
     }
 
 }

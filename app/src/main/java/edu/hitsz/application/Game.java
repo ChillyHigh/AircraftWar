@@ -1,17 +1,12 @@
 package edu.hitsz.application;
 
-import edu.hitsz.aircraft.*;
-import edu.hitsz.factory.BossEnemyFactory;
-import edu.hitsz.factory.EliteEnemyFactory;
-import edu.hitsz.factory.ElitePlusEnemyFactory;
-import edu.hitsz.factory.EliteProEnemyFactory;
-import edu.hitsz.factory.EnemyFactory;
-import edu.hitsz.factory.MobEnemyFactory;
-import edu.hitsz.bullet.BaseBullet;
-import edu.hitsz.factory.PropFactory;
-import edu.hitsz.prop.BaseProp;
+import edu.hitsz.aircraft.AbstractAircraft;
+import edu.hitsz.aircraft.AbstractEnemy;
+import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.basic.AbstractFlyingObject;
-
+import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.factory.*;
+import edu.hitsz.prop.BaseProp;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -19,14 +14,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.image.Image;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * 游戏主面板，游戏启动
- * 
+ *
  * @author hitsz
  */
 public class Game extends Pane {
@@ -37,7 +31,7 @@ public class Game extends Pane {
     private int timeInterval = 20;
 
     private final HeroAircraft heroAircraft;
-    private final List<AbstractAircraft> enemyAircrafts;
+    private final List<AbstractEnemy> enemyAircrafts;
     private final List<EnemyFactory> enemyFactories;
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
@@ -217,7 +211,7 @@ public class Game extends Pane {
             if (bullet.notValid()) {
                 continue;
             }
-            for (AbstractAircraft enemyAircraft : enemyAircrafts) {
+            for (AbstractEnemy enemyAircraft : enemyAircrafts) {
                 if (enemyAircraft.notValid()) {
                     // 已被其他子弹击毁的敌机，不再检测
                     // 避免多个子弹重复击毁同一敌机的判定
@@ -229,13 +223,11 @@ public class Game extends Pane {
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
-                        // TODO 获得分数，产生道具补给
-                        BaseProp prop = PropFactory.creatProp("Blood",
-                                enemyAircraft.getLocationX(),
-                                enemyAircraft.getLocationY(), 0, 2);
-                        score += 10;
-                        props.add(prop);
-
+                        score += enemyAircraft.getScore();
+                        BaseProp prop = enemyAircraft.dropProp();
+                        if (prop != null) {
+                            props.add(prop);
+                        }
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁
@@ -285,7 +277,9 @@ public class Game extends Pane {
             gameOverFlag = true;
             System.out.println("Game Over!");
         }
-    };
+    }
+
+    ;
 
     // ***********************
     // Render 各部分
