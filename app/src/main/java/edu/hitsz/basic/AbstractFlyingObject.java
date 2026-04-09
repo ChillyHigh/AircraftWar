@@ -28,6 +28,9 @@ public abstract class AbstractFlyingObject {
     // 对象的旋转角度，单位：角度
     protected double rotation = 0.0;
 
+    // 对象的旋转速度，单位：角度/帧
+    protected double omega = 0.0;
+
     //图片, null 表示未设置
     protected Image image = null;
 
@@ -212,6 +215,85 @@ public abstract class AbstractFlyingObject {
         gc.rotate(angle);
         gc.drawImage(image, -drawWidth / 2.0, -drawHeight / 2.0, drawWidth, drawHeight);
         gc.restore();
+    }
+
+    //===== 移动和旋转的方法 =====
+    /**
+     * 朝着目标点移动，最大速度为maxSpeed
+     *
+     * @param targetX 目标点 x 坐标
+     * @param targetY 目标点 y 坐标
+     * @param maxSpeed 最大速度，单位：像素/帧
+     * @param inertia  0.0-1.0，速度更新的惯性，0表示瞬间达到目标速度，1表示永远保持当前速度
+     * @return 是否已经到达目标点
+     */
+    protected boolean moveToward(double targetX, double targetY, double maxSpeed, double inertia) {
+        double dx = targetX - locationX;
+        double dy = targetY - locationY;
+
+        double distance = Math.hypot(dx, dy);
+
+        if (distance < 1 || maxSpeed == Double.POSITIVE_INFINITY) { //已到达目标点 或 无速度限制，直接设置位置
+            locationX = targetX;
+            locationY = targetY;
+            speedX = 0;
+            speedY = 0;
+            return true;
+        }
+
+        // 靠近目标点时速度逐渐降低，避免过冲
+        if (distance < maxSpeed * 0.5) {
+            maxSpeed = distance * 0.5;
+        }
+
+        // 目标速度
+        double targetSpeedX = dx / distance * maxSpeed;
+        double targetSpeedY = dy / distance * maxSpeed;
+
+        // 当前速度逐渐逼近目标速度
+        speedX = speedX * inertia + targetSpeedX * (1.0 - inertia);
+        speedY = speedY * inertia + targetSpeedY * (1.0 - inertia);
+        this.locationX += speedX;
+        this.locationY += speedY;
+
+        return false;
+    }
+
+    /**
+     * 朝着目标点旋转，最大旋转速度为maxOmega
+     *
+     * @param targetX 目标点 x 坐标
+     * @param targetY 目标点 y 坐标
+     * @param maxOmega 最大旋转速度，单位：角度/帧
+     * @param inertia  0.0-1.0，旋转速度更新的惯性，0表示瞬间达到目标旋转速度，1表示永远保持当前旋转速度
+     */
+    protected void rotateToward(double targetX, double targetY, double maxOmega, double inertia) {
+        double dx = targetX - this.locationX;
+        double dy = targetY - this.locationY;
+
+        if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) {
+            return;
+        }
+
+        double targetRotation = Math.toDegrees(Math.atan2(dy, dx)) + 90.0;
+
+        if (maxOmega == Double.POSITIVE_INFINITY) { // 无旋转限制，直接设置角度
+            this.rotation = targetRotation;
+            return;
+        }
+        double targetOmega = normalizeAngle(targetRotation - this.rotation) * 0.1; // Proportional control
+        if (targetOmega > maxOmega) {
+            targetOmega = maxOmega;
+        } else if (targetOmega < -maxOmega) {
+            targetOmega = -maxOmega;
+        }
+        omega = omega * inertia + targetOmega * (1.0 - inertia);
+
+        this.rotation += omega;
+    }
+
+    private double normalizeAngle(double angle) {
+        return angle - 360.0 * Math.floor((angle + 180.0) / 360.0);
     }
 
 }
