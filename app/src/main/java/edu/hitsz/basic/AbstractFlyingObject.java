@@ -2,8 +2,6 @@ package edu.hitsz.basic;
 
 import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.application.ImageManager;
-import edu.hitsz.application.Main;
-
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -53,6 +51,7 @@ public abstract class AbstractFlyingObject {
         this.locationY = locationY;
         this.speedX = speedX;
         this.speedY = speedY;
+        hitBox = createDefaultHitBox();
     }
 
     /**
@@ -77,14 +76,14 @@ public abstract class AbstractFlyingObject {
     /**
      * 碰撞检测，当对方坐标进入我方范围，判定我方击中<br>
      * 对方与我方覆盖区域有交叉即判定撞击。
-     *  <br>
+     * <br>
      * 非飞机对象区域：
-     *  横向，[x - width/2, x + width/2]
-     *  纵向，[y - height/2, y + height/2]
-     *  <br>
+     * 横向，[x - width/2, x + width/2]
+     * 纵向，[y - height/2, y + height/2]
+     * <br>
      * 飞机对象区域：
-     *  横向，[x - width/2, x + width/2]
-     *  纵向，[y - height/4, y + height/4]
+     * 横向，[x - width/2, x + width/2]
+     * 纵向，[y - height/4, y + height/4]
      *
      * @param flyingObject 撞击对方
      * @return true: 我方被击中; false 我方未被击中
@@ -94,9 +93,6 @@ public abstract class AbstractFlyingObject {
     }
 
     public HitBox getHitBox() {
-        if (hitBox == null) {
-            hitBox = createDefaultHitBox();
-        }
         return hitBox;
     }
 
@@ -123,7 +119,7 @@ public abstract class AbstractFlyingObject {
         return locationY;
     }
 
-    public void setLocation(double locationX, double locationY){
+    public void setLocation(double locationX, double locationY) {
         this.locationX = locationX;
         this.locationY = locationY;
     }
@@ -143,14 +139,14 @@ public abstract class AbstractFlyingObject {
     }
 
     public Image getImage() {
-        if (image == null){
+        if (image == null) {
             image = ImageManager.get(this);
         }
         return image;
     }
 
     public int getWidth() {
-        if (width == -1){
+        if (width == -1) {
             // 若未设置，则查询图片宽度并设置
             Image resolved = ImageManager.get(this);
             if (resolved == null) {
@@ -162,7 +158,7 @@ public abstract class AbstractFlyingObject {
     }
 
     public int getHeight() {
-        if (height == -1){
+        if (height == -1) {
             // 若未设置，则查询图片高度并设置
             Image resolved = ImageManager.get(this);
             if (resolved == null) {
@@ -172,6 +168,7 @@ public abstract class AbstractFlyingObject {
         }
         return height;
     }
+
     public boolean notValid() {
         return !this.isValid;
     }
@@ -186,7 +183,7 @@ public abstract class AbstractFlyingObject {
     }
 
     public void render(GraphicsContext gc) {
-        if (notValid()){
+        if (notValid()) {
             return;
         }
         Image image = getImage();
@@ -194,16 +191,20 @@ public abstract class AbstractFlyingObject {
             throw new IllegalStateException(this.getClass().getName() + " has no image!");
         }
         drawImage(gc, image, locationX, locationY, rotation, scale);
+
+        // 绘制出碰撞箱边框
+        hitBox.render(gc);
     }
 
     /**
      * 绘制贴图，包含旋转和缩放
-     * @param gc 图形上下文
-     * @param image 图片
+     *
+     * @param gc        图形上下文
+     * @param image     图片
      * @param locationX x 坐标
      * @param locationY y 坐标
-     * @param angle 旋转角度，单位：角度
-     * @param scale 缩放比例
+     * @param angle     旋转角度，单位：角度
+     * @param scale     缩放比例
      */
     public static void drawImage(GraphicsContext gc, Image image, double locationX, double locationY,
                                  double angle, double scale) {
@@ -218,11 +219,12 @@ public abstract class AbstractFlyingObject {
     }
 
     //===== 移动和旋转的方法 =====
+
     /**
      * 朝着目标点移动，最大速度为maxSpeed
      *
-     * @param targetX 目标点 x 坐标
-     * @param targetY 目标点 y 坐标
+     * @param targetX  目标点 x 坐标
+     * @param targetY  目标点 y 坐标
      * @param maxSpeed 最大速度，单位：像素/帧
      * @param inertia  0.0-1.0，速度更新的惯性，0表示瞬间达到目标速度，1表示永远保持当前速度
      * @return 是否已经到达目标点
@@ -262,8 +264,8 @@ public abstract class AbstractFlyingObject {
     /**
      * 朝着目标点旋转，最大旋转速度为maxOmega
      *
-     * @param targetX 目标点 x 坐标
-     * @param targetY 目标点 y 坐标
+     * @param targetX  目标点 x 坐标
+     * @param targetY  目标点 y 坐标
      * @param maxOmega 最大旋转速度，单位：角度/帧
      * @param inertia  0.0-1.0，旋转速度更新的惯性，0表示瞬间达到目标旋转速度，1表示永远保持当前旋转速度
      */

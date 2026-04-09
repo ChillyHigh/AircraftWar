@@ -1,5 +1,8 @@
 package edu.hitsz.basic;
 
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
 public class HitBox {
     private final double offsetX;
     private final double offsetY;
@@ -36,5 +39,13 @@ public class HitBox {
 
     private double getBottom(HitBox hitBox) {
         return hitBox.owner.getLocationY() + hitBox.offsetY + hitBox.halfHeight;
+    }
+
+    public void render(GraphicsContext gc) {
+        gc.save();
+        gc.translate(owner.getLocationX(), owner.getLocationY());
+        gc.setStroke(Color.WHITE);
+        gc.strokeRect(-halfWidth, -halfHeight, halfWidth * 2.0, halfHeight * 2.0);
+        gc.restore();
     }
 }
