@@ -24,10 +24,10 @@ public class EliteEnemy extends AbstractEnemy {
     @Override
     public List<BaseBullet> shoot() {
         List<BaseBullet> res = new LinkedList<>();
-        int x = this.getLocationX();
-        int y = this.getLocationY() + direction * 2;
-        int speedX = 0;
-        int speedY = this.getSpeedY() + direction * 5;
+        double x = this.getLocationX();
+        double y = this.getLocationY() + direction * 2;
+        double speedX = 0;
+        double speedY = this.getSpeedY() + direction * 5;
         BaseBullet bullet;
         for (int i = 0; i < shootNum; i++) {
             // 子弹发射位置相对飞机位置向前偏移

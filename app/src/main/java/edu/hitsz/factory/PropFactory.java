@@ -3,7 +3,7 @@ package edu.hitsz.factory;
 import edu.hitsz.prop.*;
 
 public class PropFactory {
-    public static BaseProp creatProp(String type, int locationX, int locationY, int speedX, int speedY) {
+    public static BaseProp creatProp(String type, double locationX, double locationY, double speedX, double speedY) {
         switch (type) {
             case "Blood":
                 return new BloodProp(locationX, locationY, speedX, speedY);
