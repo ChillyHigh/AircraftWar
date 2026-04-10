@@ -26,6 +26,9 @@ public abstract class AbstractFlyingObject {
     // 对象的旋转角度，单位：角度
     protected double rotation = 0.0;
 
+    // 初始的角度，跟图片有关，默认是0度
+    protected double initRotation = 0.0;
+
     // 对象的旋转速度，单位：角度/帧
     protected double omega = 0.0;
 
@@ -190,10 +193,10 @@ public abstract class AbstractFlyingObject {
         if (image == null) {
             throw new IllegalStateException(this.getClass().getName() + " has no image!");
         }
-        drawImage(gc, image, locationX, locationY, rotation, scale);
+        drawImage(gc, image, locationX, locationY, rotation + initRotation, scale);
 
         // 绘制出碰撞箱边框
-        hitBox.render(gc);
+//        hitBox.render(gc);
     }
 
     /**

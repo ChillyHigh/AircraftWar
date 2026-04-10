@@ -5,6 +5,7 @@ import edu.hitsz.basic.AbstractFlyingObject;
 
 /**
  * 子弹基类
+ *
  * @author hitsz
  */
 public abstract class BaseBullet extends AbstractFlyingObject {
@@ -14,6 +15,7 @@ public abstract class BaseBullet extends AbstractFlyingObject {
     public BaseBullet(double locationX, double locationY, double speedX, double speedY, int power) {
         super(locationX, locationY, speedX, speedY);
         this.power = power;
+        this.rotation = Math.toDegrees(Math.atan2(speedY, speedX)) + 90;
     }
 
     @Override
