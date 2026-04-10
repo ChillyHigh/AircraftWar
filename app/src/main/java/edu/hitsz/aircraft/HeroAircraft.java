@@ -3,9 +3,8 @@ package edu.hitsz.aircraft;
 import edu.hitsz.application.ImageManager;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
-import edu.hitsz.bullet.HeroBullet;
+import edu.hitsz.strategy.StraightShootStrategy;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -18,17 +17,10 @@ public class HeroAircraft extends AbstractAircraft {
     // 单例模式的存储
     private volatile static HeroAircraft hero;
 
-    // 每次射击发射子弹数量
-    private int shootNum = 1;
-
-    // 子弹威力
-    private int power = 30;
-
-    // 子弹射击方向 (向上发射：-1，向下发射：1)
-    private int direction = -1;
-
     private HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
+        direction = -1;
+        shootStrategy = new StraightShootStrategy();
     }
 
     /**
@@ -60,19 +52,13 @@ public class HeroAircraft extends AbstractAircraft {
      */
     @Override
     public List<BaseBullet> shoot() {
-        List<BaseBullet> res = new LinkedList<>();
-        double x = this.getLocationX();
-        double y = this.getLocationY() + direction * 2;
-        double speedX = 0;
-        double speedY = this.getSpeedY() + direction * 5;
-        BaseBullet bullet;
-        for (int i = 0; i < shootNum; i++) {
-            // 子弹发射位置相对飞机位置向前偏移
-            // 多个子弹横向分散
-            bullet = new HeroBullet(x + (i * 2 - shootNum + 1) * 10, y, speedX, speedY, power);
-            res.add(bullet);
-        }
-        return res;
+        return shootStrategy.shoot(this, "hero");
+
+    }
+
+    @Override
+    public void decreaseHp(int decrease) {
+
     }
 
 }

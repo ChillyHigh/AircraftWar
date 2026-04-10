@@ -80,8 +80,8 @@ public class Game extends Pane {
                 new MobEnemyFactory(),
                 new EliteEnemyFactory(),
                 new ElitePlusEnemyFactory(),
-                new EliteProEnemyFactory(),
-                new BossEnemyFactory());
+                new EliteProEnemyFactory()/*,
+                new BossEnemyFactory()*/);
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
