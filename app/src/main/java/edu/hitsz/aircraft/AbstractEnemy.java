@@ -1,12 +1,12 @@
 package edu.hitsz.aircraft;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.factory.PropFactory;
 import edu.hitsz.prop.BaseProp;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 敌机的抽象父类
@@ -16,16 +16,6 @@ import edu.hitsz.prop.BaseProp;
 public abstract class AbstractEnemy extends AbstractAircraft {
     // 敌机被击落后增加的分数
     protected int score = 10;
-
-    // 子弹射击方向
-    protected int direction = 1;
-
-    // 每次射击发射子弹数量
-    protected int shootNum = 1;
-
-    // 子弹威力
-    protected int power = 30;
-
 
     // 可掉落道具类型
     protected String[] droppablePropTypes = new String[0];
@@ -49,7 +39,10 @@ public abstract class AbstractEnemy extends AbstractAircraft {
      */
     @Override
     public List<BaseBullet> shoot() {
-        return new LinkedList<>();
+        if (shootStrategy == null) {
+            return new LinkedList<>();
+        }
+        return shootStrategy.shoot(this, "enemy");
     }
 
     public int getScore() {
@@ -60,6 +53,11 @@ public abstract class AbstractEnemy extends AbstractAircraft {
         this.droppablePropTypes = droppablePropTypes;
     }
 
+    /**
+     * 产生道具的方法
+     *
+     * @return 道具实例
+     */
     public BaseProp dropProp() {
         if (droppablePropTypes.length == 0) {
             return null;
