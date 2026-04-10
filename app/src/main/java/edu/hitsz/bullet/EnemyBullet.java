@@ -7,8 +7,8 @@ package edu.hitsz.bullet;
  */
 public class EnemyBullet extends BaseBullet {
 
-    public EnemyBullet(double locationX, double locationY, double speedX, double speedY, int power) {
-        super(locationX, locationY, speedX, speedY, power);
+    public EnemyBullet(double locationX, double locationY, double speedX, double speedY, int power, double angle) {
+        super(locationX, locationY, speedX, speedY, power, angle);
         this.initRotation = 180.0;
     }
 

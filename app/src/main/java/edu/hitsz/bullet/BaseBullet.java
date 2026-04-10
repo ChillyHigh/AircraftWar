@@ -12,10 +12,10 @@ public abstract class BaseBullet extends AbstractFlyingObject {
 
     private int power = 10;
 
-    public BaseBullet(double locationX, double locationY, double speedX, double speedY, int power) {
+    public BaseBullet(double locationX, double locationY, double speedX, double speedY, int power, double angle) {
         super(locationX, locationY, speedX, speedY);
         this.power = power;
-        this.rotation = Math.toDegrees(Math.atan2(speedY, speedX)) + 90;
+        this.rotation = angle;
     }
 
     @Override
