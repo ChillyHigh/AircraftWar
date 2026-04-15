@@ -157,6 +157,8 @@ public class Game extends Pane {
         bulletsMoveAction();
         // 飞机移动
         aircraftMoveAction();
+        // 道具移动
+        propsMoveAction();
         // 撞击检测
         crashCheckAction();
         // 后处理
@@ -194,6 +196,12 @@ public class Game extends Pane {
     private void aircraftMoveAction() {
         for (AbstractAircraft enemyAircraft : enemyAircrafts) {
             enemyAircraft.forward();
+        }
+    }
+
+    private void propsMoveAction() {
+        for (BaseProp prop : props) {
+            prop.forward();
         }
     }
 
