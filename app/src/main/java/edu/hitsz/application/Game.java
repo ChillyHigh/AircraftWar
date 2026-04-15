@@ -51,6 +51,12 @@ public class Game extends Pane {
     // 当前玩家分数
     private int score = 0;
 
+    // 召唤BOSS的分数间隔
+    private final int BOSS_SCORE_INTERVAL = 1000;
+
+    // 上次召唤BOSS时的分数
+    private int lastBossScore = 0;
+
     // 游戏结束标志
     private boolean gameOverFlag = false;
 
@@ -139,6 +145,11 @@ public class Game extends Pane {
                 EnemyFactory enemyFactory = enemyFactories.get((int) (Math.random() * enemyFactories.size()));
                 enemyAircrafts.add(enemyFactory.createEnemy());
             }
+        }
+        // 召唤BOSS敌机
+        if (score - lastBossScore >= BOSS_SCORE_INTERVAL) {
+            enemyAircrafts.add(new BossEnemyFactory().createEnemy());
+            lastBossScore = score;
         }
         // 飞机射出子弹
         shootAction();
