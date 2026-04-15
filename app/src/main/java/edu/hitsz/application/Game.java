@@ -235,10 +235,7 @@ public class Game extends Pane {
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
                         score += enemyAircraft.getScore();
-                        BaseProp prop = enemyAircraft.dropProp();
-                        if (prop != null) {
-                            props.add(prop);
-                        }
+                        props.addAll(enemyAircraft.dropProp());
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁

@@ -58,12 +58,14 @@ public abstract class AbstractEnemy extends AbstractAircraft {
      *
      * @return 道具实例
      */
-    public BaseProp dropProp() {
+    public List<BaseProp> dropProp() {
         if (droppablePropTypes.length == 0) {
-            return null;
+            return new LinkedList<>();
         }
         // 随机选择一个道具类型
         String propType = droppablePropTypes[(int) (Math.random() * droppablePropTypes.length)];
-        return PropFactory.creatProp(propType, getLocationX(), getLocationY(), 0, 2);
+        LinkedList<BaseProp> props = new LinkedList<>();
+        props.add(PropFactory.creatProp(propType, getLocationX(), getLocationY(), 0, 2));
+        return props;
     }
 }

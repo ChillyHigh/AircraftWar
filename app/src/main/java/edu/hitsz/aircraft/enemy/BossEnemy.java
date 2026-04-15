@@ -2,7 +2,12 @@ package edu.hitsz.aircraft.enemy;
 
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.application.Main;
+import edu.hitsz.factory.PropFactory;
+import edu.hitsz.prop.BaseProp;
 import edu.hitsz.strategy.CircleShootStrategy;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 精英敌机，可射击和掉落道具
@@ -24,6 +29,20 @@ public class BossEnemy extends AbstractEnemy {
         if (locationX < 0 || locationX > Main.WINDOW_WIDTH) {
             speedX = -speedX;
         }
+    }
+
+    @Override
+    public List<BaseProp> dropProp() {
+        String propType = droppablePropTypes[(int) (Math.random() * droppablePropTypes.length)];
+        LinkedList<BaseProp> props = new LinkedList<>();
+        props.add(PropFactory.creatProp(propType, getLocationX() - 50, getLocationY(), 0, 2));
+        propType = droppablePropTypes[(int) (Math.random() * droppablePropTypes.length)];
+        props.add(PropFactory.creatProp(propType, getLocationX(), getLocationY(), 0, 2));
+        propType = droppablePropTypes[(int) (Math.random() * droppablePropTypes.length)];
+        props.add(PropFactory.creatProp(propType, getLocationX() + 50, getLocationY(), 0, 2));
+
+        return props;
+
     }
 
 }
