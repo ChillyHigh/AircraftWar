@@ -17,6 +17,9 @@ public abstract class AbstractEnemy extends AbstractAircraft {
     // 敌机被击落后增加的分数
     protected int score = 10;
 
+    // 道具掉落概率
+    protected double propDropRate = 1.0;
+
     // 可掉落道具类型
     protected String[] droppablePropTypes = new String[0];
 
@@ -53,13 +56,18 @@ public abstract class AbstractEnemy extends AbstractAircraft {
         this.droppablePropTypes = droppablePropTypes;
     }
 
+    protected void setDropConfig(double propDropRate, String... droppablePropTypes) {
+        this.propDropRate = propDropRate;
+        this.droppablePropTypes = droppablePropTypes;
+    }
+
     /**
      * 产生道具的方法
      *
      * @return 道具实例
      */
     public List<BaseProp> dropProp() {
-        if (droppablePropTypes.length == 0) {
+        if (droppablePropTypes.length == 0 || Math.random() > propDropRate) {
             return new LinkedList<>();
         }
         // 随机选择一个道具类型

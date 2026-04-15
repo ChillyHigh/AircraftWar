@@ -10,12 +10,14 @@ import edu.hitsz.strategy.StraightShootStrategy;
  * @author CH
  */
 public class ElitePlusEnemy extends AbstractEnemy {
+    private static final double PROP_DROP_RATE = 0.5;
+
     public ElitePlusEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
 
         // 设置精英敌机分数
         super.score = 30;
-        setDropConfig("Blood", "Bullet", "BulletPlus", "Bomb");
+        setDropConfig(PROP_DROP_RATE, "Blood", "Bullet", "BulletPlus", "Bomb");
         this.shootNum = 2;
         this.shootStrategy = new StraightShootStrategy();
     }
