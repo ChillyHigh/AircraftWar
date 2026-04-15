@@ -10,6 +10,6 @@ public class BloodProp extends BaseProp {
     @Override
     public void activate() {
         // 英雄机加血
-        HeroAircraft.getHeroAircraft().decreaseHp(-30);
+        HeroAircraft.getHeroAircraft().increaseHp(-30);
     }
 }
