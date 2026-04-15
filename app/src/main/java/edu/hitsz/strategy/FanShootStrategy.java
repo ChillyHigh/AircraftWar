@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FanShootStrategy implements ShootStrategy {
+    private static final double[] OFFSETS_X = {-15, 0, 15};
+    private static final double[] SPEEDS_X = {-1, 0, 1};
 
     @Override
     public List<BaseBullet> shoot(AbstractAircraft shooter, String bulletType) {
@@ -16,18 +18,14 @@ public class FanShootStrategy implements ShootStrategy {
         double y = shooter.getLocationY() + shooter.getDirection() * 2;
         double baseSpeedY = shooter.getSpeedY() + shooter.getDirection() * 3;
 
-        res.add(BulletFactory.createBullet("enemy",
-                x - 15, y,
-                -1, Math.sqrt(baseSpeedY * baseSpeedY - 4),
-                shooter.getPower(), 210));
-        res.add(BulletFactory.createBullet("enemy",
-                x, y,
-                0, Math.sqrt(baseSpeedY * baseSpeedY - 4),
-                shooter.getPower(), 180));
-        res.add(BulletFactory.createBullet("enemy",
-                x + 15, y,
-                1, Math.sqrt(baseSpeedY * baseSpeedY - 4),
-                shooter.getPower(), 150));
+        for (int i = 0; i < OFFSETS_X.length; i++) {
+            double speedX = SPEEDS_X[i];
+            double angle = Math.toDegrees(Math.atan2(baseSpeedY, speedX)) + 90.0;
+            res.add(BulletFactory.createBullet(bulletType,
+                    x + OFFSETS_X[i], y,
+                    speedX, baseSpeedY,
+                    shooter.getPower(), angle));
+        }
         return res;
     }
 }
