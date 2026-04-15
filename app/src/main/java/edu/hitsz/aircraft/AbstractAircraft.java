@@ -24,7 +24,7 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     protected int shootNum = 1;
 
     // 子弹威力
-    protected int power = 30;
+    protected int power = 10;
 
     // 射击策略
     protected ShootStrategy shootStrategy;

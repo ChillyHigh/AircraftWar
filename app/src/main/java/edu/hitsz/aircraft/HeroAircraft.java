@@ -21,6 +21,7 @@ public class HeroAircraft extends AbstractAircraft {
         super(locationX, locationY, speedX, speedY, hp);
         direction = -1;
         shootStrategy = new StraightShootStrategy();
+        this.power = 30;
     }
 
     /**
@@ -56,10 +57,6 @@ public class HeroAircraft extends AbstractAircraft {
 
     }
 
-    @Override
-    public void decreaseHp(int decrease) {
-
-    }
 
     public void increaseHp(int increase) {
         hp = Math.max(hp + increase, maxHp);
