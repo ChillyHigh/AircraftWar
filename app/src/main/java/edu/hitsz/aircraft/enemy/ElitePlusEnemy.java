@@ -1,6 +1,7 @@
 package edu.hitsz.aircraft.enemy;
 
 import edu.hitsz.aircraft.AbstractEnemy;
+import edu.hitsz.application.Main;
 import edu.hitsz.strategy.StraightShootStrategy;
 
 /**
@@ -17,6 +18,14 @@ public class ElitePlusEnemy extends AbstractEnemy {
         setDropConfig("Blood", "Bullet", "BulletPlus", "Bomb");
         this.shootNum = 2;
         this.shootStrategy = new StraightShootStrategy();
+    }
+
+    @Override
+    public void forward() {
+        super.forward();
+        if (locationX < 0 || locationX > Main.WINDOW_WIDTH) {
+            speedX = -speedX;
+        }
     }
 
 }

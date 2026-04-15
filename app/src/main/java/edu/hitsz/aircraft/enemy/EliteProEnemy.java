@@ -1,6 +1,7 @@
 package edu.hitsz.aircraft.enemy;
 
 import edu.hitsz.aircraft.AbstractEnemy;
+import edu.hitsz.application.Main;
 import edu.hitsz.strategy.FanShootStrategy;
 
 /**
@@ -20,16 +21,11 @@ public class EliteProEnemy extends AbstractEnemy {
         this.shootStrategy = new FanShootStrategy();
     }
 
-//    @Override
-//    public List<BaseBullet> shoot() {
-//        List<BaseBullet> res = new LinkedList<>();
-//        double x = getLocationX();
-//        double y = getLocationY() + direction * 2;
-//        double baseSpeedY = getSpeedY() + direction * 5;
-//
-//        res.add(new EnemyBullet(x - 15, y, -2, Math.sqrt(baseSpeedY * baseSpeedY - 4), power));
-//        res.add(new EnemyBullet(x, y, 0, baseSpeedY, power));
-//        res.add(new EnemyBullet(x + 15, y, 2, Math.sqrt(baseSpeedY * baseSpeedY - 4), power));
-//        return res;
-//    }
+    @Override
+    public void forward() {
+        super.forward();
+        if (locationX < 0 || locationX > Main.WINDOW_WIDTH) {
+            speedX = -speedX;
+        }
+    }
 }

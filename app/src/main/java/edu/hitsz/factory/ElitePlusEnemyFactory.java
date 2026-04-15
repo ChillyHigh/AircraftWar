@@ -9,7 +9,7 @@ public class ElitePlusEnemyFactory extends EnemyFactory {
         return new ElitePlusEnemy(
                 randomLocation(),
                 -30,
-                0,
+                (int) Math.round(Math.random() * 3),
                 5,
                 30);
     }
