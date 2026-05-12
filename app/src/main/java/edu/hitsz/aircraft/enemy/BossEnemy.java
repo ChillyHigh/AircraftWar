@@ -28,6 +28,8 @@ public class BossEnemy extends AbstractEnemy {
         super.forward();
         if (speedY >= 0.1) {
             speedY *= 0.96;
+        } else {
+            speedY = 0;
         }
         if (locationX < 0 || locationX > Main.WINDOW_WIDTH) {
             speedX = -speedX;
