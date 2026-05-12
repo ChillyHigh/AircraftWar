@@ -296,6 +296,7 @@ public abstract class AbstractGame extends Pane {
                 if (enemyAircraft.crash(bullet)) {
                     // 敌机撞击到英雄机子弹
                     // 敌机损失一定生命值
+                    AudioManager.playSound(AudioManager.BULLET_HIT);
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
                     if (enemyAircraft.notValid()) {
@@ -306,7 +307,7 @@ public abstract class AbstractGame extends Pane {
                 // 英雄机 与 敌机 相撞，均损毁
                 if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
                     enemyAircraft.vanish();
-//                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
+                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
                 }
             }
         }
@@ -371,6 +372,7 @@ public abstract class AbstractGame extends Pane {
             gameOverFlag = true;
             System.out.println("Game Over!");
             AudioManager.stopBGM();
+            AudioManager.playSound(AudioManager.GAME_OVER);
             // 游戏结束，切换到排名页面
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));

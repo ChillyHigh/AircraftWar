@@ -1,5 +1,6 @@
 package edu.hitsz.prop;
 
+import edu.hitsz.application.AudioManager;
 import edu.hitsz.observer.PropObserver;
 import edu.hitsz.observer.PropSubject;
 
@@ -32,6 +33,7 @@ public class BombProp extends BaseProp implements PropSubject {
 
     @Override
     public void activate() {
+        AudioManager.playSound(AudioManager.BOMB_EXPLOSION);
         notifyObservers();
         clearObservers();
         System.out.println("BombProp active!");
