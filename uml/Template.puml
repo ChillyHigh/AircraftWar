@@ -1,0 +1,48 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class AbstractGame
+{
+    + final action(): void
+    # {abstract} initializeDifficulty(): void
+    # {abstract} updateDifficulty(): void
+    # {abstract} spawnEnemy(): void
+    # {abstract} spawnBoss(): void
+    # {abstract} getDifficultyName(): String
+}
+
+class EasyGame
+{
+    + EasyGame()
+    # initializeDifficulty(): void
+    # updateDifficulty(): void
+    # spawnEnemy(): void
+    # spawnBoss(): void
+    # getDifficultyName(): String
+}
+
+class NormalGame
+{
+    + NormalGame()
+    # initializeDifficulty(): void
+    # updateDifficulty(): void
+    # spawnEnemy(): void
+    # spawnBoss(): void
+    # getDifficultyName(): String
+}
+
+class HardGame
+{
+    + HardGame()
+    # initializeDifficulty(): void
+    # updateDifficulty(): void
+    # spawnEnemy(): void
+    # spawnBoss(): void
+    # getDifficultyName(): String
+}
+
+AbstractGame <|-- EasyGame
+AbstractGame <|-- NormalGame
+AbstractGame <|-- HardGame
+
+@enduml

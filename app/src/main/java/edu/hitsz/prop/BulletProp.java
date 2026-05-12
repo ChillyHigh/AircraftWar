@@ -10,8 +10,7 @@ public class BulletProp extends BaseProp {
 
     @Override
     public void activate() {
-        // 英雄机切换为散射子弹
-        HeroAircraft.getHeroAircraft().setShootStrategy(new FanShootStrategy());
+        HeroAircraft.getHeroAircraft().setShootStrategy(new FanShootStrategy(), 10_000L);
         System.out.println("FireSupply active!");
     }
 

@@ -20,4 +20,9 @@ public class EliteEnemy extends AbstractEnemy {
         this.shootStrategy = new StraightShootStrategy();
     }
 
+    @Override
+    protected long getFreezeDuration() {
+        return 4_000L;
+    }
+
 }

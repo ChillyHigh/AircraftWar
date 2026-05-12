@@ -3,7 +3,9 @@ package edu.hitsz.aircraft;
 import edu.hitsz.application.ImageManager;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.strategy.ShootStrategy;
 import edu.hitsz.strategy.StraightShootStrategy;
+import edu.hitsz.thread.TimeOutThread;
 
 import java.util.List;
 
@@ -13,9 +15,9 @@ import java.util.List;
  * @author hitsz
  */
 public class HeroAircraft extends AbstractAircraft {
-
     // 单例模式的存储
     private volatile static HeroAircraft hero;
+    private TimeOutThread fireStrategyThread;
 
     private HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY, hp);
@@ -35,7 +37,7 @@ public class HeroAircraft extends AbstractAircraft {
                 hero = new HeroAircraft(
                         Main.WINDOW_WIDTH / 2,
                         Main.WINDOW_HEIGHT - (int) ImageManager.HERO_IMAGE.getHeight(),
-                        0, 0, 100);
+                        0, 0, 10000);
             }
         }
         return hero;
@@ -59,7 +61,21 @@ public class HeroAircraft extends AbstractAircraft {
 
 
     public void increaseHp(int increase) {
-        hp = Math.max(hp + increase, maxHp);
+        hp = Math.min(hp + increase, maxHp);
+    }
+
+    @Override
+    public void setShootStrategy(ShootStrategy strategy, long durationMs) {
+        super.setShootStrategy(strategy);
+        if (fireStrategyThread == null || !fireStrategyThread.isAlive()) {
+            fireStrategyThread = new TimeOutThread(durationMs, () -> {
+                HeroAircraft.super.setShootStrategy(new StraightShootStrategy());
+                fireStrategyThread = null;
+            });
+            fireStrategyThread.start();
+        } else {
+            fireStrategyThread.extend(durationMs);
+        }
     }
 
 }

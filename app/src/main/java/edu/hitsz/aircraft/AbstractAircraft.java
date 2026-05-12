@@ -72,6 +72,10 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         this.shootStrategy = strategy;
     }
 
+    public void setShootStrategy(ShootStrategy strategy, long durationMs) {
+        this.shootStrategy = strategy;
+    }
+
     /**
      * 飞机射击方法，可射击对象必须实现
      *
@@ -81,5 +85,4 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     public abstract List<BaseBullet> shoot();
 
 }
-
 

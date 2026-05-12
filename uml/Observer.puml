@@ -1,0 +1,55 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface PropObserver
+{
+    + onBomb(): void
+    + onFreeze(): void
+}
+
+interface PropSubject
+{
+    + addObserver(observer: PropObserver): void
+    + clearObservers(): void
+    + notifyObservers(): void
+}
+
+abstract class BaseProp
+{
+    + activate(): void
+}
+
+class BombProp
+{
+    + activate(): void
+}
+
+class FreezeProp
+{
+    + activate(): void
+}
+
+abstract class AbstractEnemy
+{
+    + onBomb(): void
+    + onFreeze(): void
+}
+
+class EnemyBullet
+{
+    + onBomb(): void
+    + onFreeze(): void
+}
+
+BaseProp <|-- BombProp
+BaseProp <|-- FreezeProp
+
+PropSubject <|.. BombProp
+PropSubject <|.. FreezeProp
+
+PropObserver <|.. AbstractEnemy
+PropObserver <|.. EnemyBullet
+
+PropObserver <--o PropSubject
+
+@enduml

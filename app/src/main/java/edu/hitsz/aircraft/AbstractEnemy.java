@@ -3,7 +3,9 @@ package edu.hitsz.aircraft;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.factory.PropFactory;
+import edu.hitsz.observer.PropObserver;
 import edu.hitsz.prop.BaseProp;
+import edu.hitsz.thread.TimeOutThread;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +15,12 @@ import java.util.List;
  *
  * @author CH
  */
-public abstract class AbstractEnemy extends AbstractAircraft {
+public abstract class AbstractEnemy extends AbstractAircraft implements PropObserver {
+    private TimeOutThread freezeThread;
+    private boolean frozen = false;
+    private double cachedSpeedX;
+    private double cachedSpeedY;
+
     // 敌机被击落后增加的分数
     protected int score = 10;
 
@@ -75,5 +82,38 @@ public abstract class AbstractEnemy extends AbstractAircraft {
         LinkedList<BaseProp> props = new LinkedList<>();
         props.add(PropFactory.creatProp(propType, getLocationX(), getLocationY(), 0, 2));
         return props;
+    }
+
+    @Override
+    public void onBomb() {
+        vanish();
+    }
+
+    @Override
+    public void onFreeze() {
+        if (!frozen) {
+            cachedSpeedX = speedX;
+            cachedSpeedY = speedY;
+            frozen = true;
+        }
+        speedX = 0;
+        speedY = 0;
+        if (freezeThread == null || !freezeThread.isAlive()) {
+            freezeThread = new TimeOutThread(getFreezeDuration(), () -> {
+                if (!notValid()) {
+                    speedX = cachedSpeedX;
+                    speedY = cachedSpeedY;
+                }
+                frozen = false;
+                freezeThread = null;
+            });
+            freezeThread.start();
+        } else if (getFreezeDuration() != Long.MAX_VALUE) {
+            freezeThread.extend(getFreezeDuration());
+        }
+    }
+
+    protected long getFreezeDuration() {
+        return Long.MAX_VALUE;
     }
 }

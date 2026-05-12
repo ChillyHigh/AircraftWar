@@ -29,4 +29,9 @@ public class EliteProEnemy extends AbstractEnemy {
             speedX = -speedX;
         }
     }
+
+    @Override
+    protected long getFreezeDuration() {
+        return 3_000L;
+    }
 }

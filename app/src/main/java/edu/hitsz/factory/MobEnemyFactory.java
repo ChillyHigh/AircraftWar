@@ -9,9 +9,9 @@ public class MobEnemyFactory extends EnemyFactory {
         return new MobEnemy(
                 randomLocation(),
                 -30,
-                0,
-                10,
-                30);
+                scaleSpeed(0),
+                scaleSpeed(10),
+                scaleHp(30));
     }
 
 }

@@ -30,4 +30,9 @@ public class ElitePlusEnemy extends AbstractEnemy {
         }
     }
 
+    @Override
+    protected long getFreezeDuration() {
+        return 5_000L;
+    }
+
 }

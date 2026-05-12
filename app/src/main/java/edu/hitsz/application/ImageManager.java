@@ -1,20 +1,10 @@
 package edu.hitsz.application;
 
 import edu.hitsz.aircraft.HeroAircraft;
-
-import edu.hitsz.aircraft.enemy.MobEnemy;
-import edu.hitsz.aircraft.enemy.EliteEnemy;
-import edu.hitsz.aircraft.enemy.ElitePlusEnemy;
-import edu.hitsz.aircraft.enemy.EliteProEnemy;
-import edu.hitsz.aircraft.enemy.BossEnemy;
-
+import edu.hitsz.aircraft.enemy.*;
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
-import edu.hitsz.prop.BombProp;
-import edu.hitsz.prop.BloodProp;
-import edu.hitsz.prop.BulletPlusProp;
-import edu.hitsz.prop.BulletProp;
-import edu.hitsz.prop.FreezeProp;
+import edu.hitsz.prop.*;
 import javafx.scene.image.Image;
 
 import java.io.IOException;
@@ -37,6 +27,12 @@ public class ImageManager {
     private static final Map<String, Image> CLASSNAME_IMAGE_MAP = new HashMap<>();
 
     public static Image BACKGROUND_IMAGE;
+    public static Image BACKGROUND_IMAGE_2;
+    public static Image BACKGROUND_IMAGE_3;
+    public static Image BACKGROUND_IMAGE_4;
+    public static Image BACKGROUND_IMAGE_5;
+
+
     public static Image HERO_IMAGE;
     public static Image HERO_BULLET_IMAGE;
     public static Image ENEMY_BULLET_IMAGE;
@@ -56,6 +52,10 @@ public class ImageManager {
         try {
 
             BACKGROUND_IMAGE = loadFromResources("/images/bg.jpg");
+            BACKGROUND_IMAGE_2 = loadFromResources("/images/bg2.jpg");
+            BACKGROUND_IMAGE_3 = loadFromResources("/images/bg3.jpg");
+            BACKGROUND_IMAGE_4 = loadFromResources("/images/bg4.jpg");
+            BACKGROUND_IMAGE_5 = loadFromResources("/images/bg5.jpg");
 
             HERO_IMAGE = loadFromResources("/images/hero.png");
             MOB_ENEMY_IMAGE = loadFromResources("/images/mob.png");

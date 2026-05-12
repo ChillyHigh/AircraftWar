@@ -1,20 +1,34 @@
-package edu.hitsz.application;
+package edu.hitsz.application.game;
 
 import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraft.enemy.BossEnemy;
+import edu.hitsz.application.AudioManager;
+import edu.hitsz.application.HeroController;
+import edu.hitsz.application.Main;
 import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.factory.*;
+import edu.hitsz.fxml.rankPageCtrl;
 import edu.hitsz.prop.BaseProp;
+import edu.hitsz.prop.BombProp;
+import edu.hitsz.prop.FreezeProp;
 import javafx.animation.AnimationTimer;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,7 +37,7 @@ import java.util.List;
  *
  * @author hitsz
  */
-public class Game extends Pane {
+public abstract class AbstractGame extends Pane {
 
     private int backGroundTop = 0;
 
@@ -31,34 +45,37 @@ public class Game extends Pane {
     private int timeInterval = 20;
 
     private final HeroAircraft heroAircraft;
-    private final List<AbstractEnemy> enemyAircrafts;
-    private final List<EnemyFactory> enemyFactories;
+    protected final List<AbstractEnemy> enemyAircrafts;
+    protected final List<EnemyFactory> enemyFactories;
     private final List<BaseBullet> heroBullets;
     private final List<BaseBullet> enemyBullets;
     private final List<BaseProp> props;
 
+    private Image backgroundImage;
+
     // 屏幕中出现的敌机最大数量
-    private final int enemyMaxNumber = 5;
+    protected int enemyMaxNumber = 5;
 
     // 敌机生成周期
     protected double enemySpawnCycle = 20;
-    private int enemySpawnCounter = 0;
 
     // 英雄机和敌机射击周期
-    protected double shootCycle = 20;
-    private int shootCounter = 0;
+    protected double enemyShootCycle = 20;
+    private int enemyShootCounter = 0;
+
+    protected double heroShootCycle = 20;
+    private int heroShootCounter = 0;
+    protected double enemyHpRate = 1.0;
+    protected double enemySpeedRate = 1.0;
+    protected double bossHpRate = 1.0;
+    protected double eliteEnemyRate = 0.25;
 
     // 当前玩家分数
-    private int score = 0;
-
-    // 召唤BOSS的分数间隔
-    private final int BOSS_SCORE_INTERVAL = 1000;
-
-    // 上次召唤BOSS时的分数
-    private int lastBossScore = 0;
+    protected int score = 0;
 
     // 游戏结束标志
     private boolean gameOverFlag = false;
+    private boolean bossBgmPlaying = false;
 
     // 画布和画笔
     private final Canvas canvas;
@@ -71,10 +88,11 @@ public class Game extends Pane {
     // 累加器，记录两帧之间经过的实际时间
     private long nanoAccumulator = 0L;
 
-    public Game() {
+    public AbstractGame(Image backgroundImage) {
         setPrefSize(Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         setPickOnBounds(true);
 
+        this.backgroundImage = backgroundImage;
         canvas = new Canvas(Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         getChildren().add(canvas);
@@ -86,8 +104,7 @@ public class Game extends Pane {
                 new MobEnemyFactory(),
                 new EliteEnemyFactory(),
                 new ElitePlusEnemyFactory(),
-                new EliteProEnemyFactory()/*,
-                new BossEnemyFactory()*/);
+                new EliteProEnemyFactory());
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
@@ -100,11 +117,11 @@ public class Game extends Pane {
     /**
      * 游戏启动入口，执行游戏逻辑
      */
-    public void action() {
-
+    public final void action() {
         if (timer != null) {
             return;
         }
+        initializeDifficulty();
 
         timer = new AnimationTimer() {
             @Override
@@ -137,20 +154,11 @@ public class Game extends Pane {
     }
 
     private void tick() {
-        enemySpawnCounter++;
-        if (enemySpawnCounter >= enemySpawnCycle) {
-            enemySpawnCounter = 0;
-            // 随机产生敌机
-            if (enemyAircrafts.size() < enemyMaxNumber) {
-                EnemyFactory enemyFactory = enemyFactories.get((int) (Math.random() * enemyFactories.size()));
-                enemyAircrafts.add(enemyFactory.createEnemy());
-            }
-        }
-        // 召唤BOSS敌机
-        if (score - lastBossScore >= BOSS_SCORE_INTERVAL) {
-            enemyAircrafts.add(new BossEnemyFactory().createEnemy());
-            lastBossScore = score;
-        }
+        updateDifficulty();
+        spawnEnemy();
+        updateBossBgm();
+        spawnBoss();
+
         // 飞机射出子弹
         shootAction();
         // 子弹移动
@@ -163,24 +171,73 @@ public class Game extends Pane {
         crashCheckAction();
         // 后处理
         postProcessAction();
+        updateBossBgm();
         // 游戏结束检查
         checkResultAction();
     }
 
     // ***********************
+    // 钩子方法
+    // ***********************
+    protected abstract void initializeDifficulty();
+
+    protected abstract void updateDifficulty();
+
+    protected abstract void spawnEnemy();
+
+    protected abstract void spawnBoss();
+
+    protected abstract String getDifficultyName();
+
+
+    /**
+     * 应用敌机工厂的倍率设置
+     */
+    protected void applyEnemyFactoryRates() {
+        for (EnemyFactory enemyFactory : enemyFactories) {
+            enemyFactory.setRates(enemyHpRate, enemySpeedRate);
+        }
+    }
+
+    protected EnemyFactory chooseEnemyFactory() {
+        if (Math.random() < 1 - eliteEnemyRate) {
+            return enemyFactories.get(0);
+        }
+        return enemyFactories.get(1 + (int) (Math.random() * (enemyFactories.size() - 1)));
+    }
+
+    protected void upgradeEnemyDifficulty(double eliteRateStep, double spawnCycleStep, double hpRateStep, double speedRateStep) {
+        eliteEnemyRate = Math.min(0.95, eliteEnemyRate + eliteRateStep);
+        enemySpawnCycle = Math.max(6.0, enemySpawnCycle - spawnCycleStep);
+        enemyHpRate += hpRateStep;
+        enemySpeedRate += speedRateStep;
+        applyEnemyFactoryRates();
+    }
+
+    protected BossEnemyFactory createBossEnemyFactory() {
+        BossEnemyFactory bossEnemyFactory = new BossEnemyFactory();
+        bossEnemyFactory.setRates(bossHpRate, enemySpeedRate);
+        return bossEnemyFactory;
+    }
+
+
+    // ***********************
     // Action 各部分
     // ***********************
     private void shootAction() {
-        shootCounter++;
-        if (shootCounter >= shootCycle) {
-            shootCounter = 0;
-            // 英雄机射击
-//            AudioManager.playSound(AudioManager.LASER_CANNON);
-            heroBullets.addAll(heroAircraft.shoot());
+        enemyShootCounter++;
+        if (enemyShootCounter >= enemyShootCycle) {
+            enemyShootCounter = 0;
             // 敌机射击
             for (AbstractAircraft enemyAircraft : enemyAircrafts) {
                 enemyBullets.addAll(enemyAircraft.shoot());
             }
+        }
+        heroShootCounter++;
+        if (heroShootCounter >= heroShootCycle) {
+            heroShootCounter = 0;
+            // 英雄机射击
+            heroBullets.addAll(heroAircraft.shoot());
         }
     }
 
@@ -249,17 +306,39 @@ public class Game extends Pane {
                 // 英雄机 与 敌机 相撞，均损毁
                 if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
                     enemyAircraft.vanish();
-                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
+//                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
                 }
             }
         }
 
-        // TODO: 我方获得道具，道具生效
         for (BaseProp prop : props) {
             if (prop.notValid()) {
                 continue;
             }
             if (heroAircraft.crash(prop)) {
+                if (prop instanceof BombProp bombProp) {
+                    for (AbstractEnemy enemyAircraft : enemyAircrafts) {
+                        if (!enemyAircraft.notValid()) {
+                            bombProp.addObserver(enemyAircraft);
+                        }
+                    }
+                    for (BaseBullet bullet : enemyBullets) {
+                        if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
+                            bombProp.addObserver(enemyBullet);
+                        }
+                    }
+                } else if (prop instanceof FreezeProp freezeProp) {
+                    for (AbstractEnemy enemyAircraft : enemyAircrafts) {
+                        if (!enemyAircraft.notValid()) {
+                            freezeProp.addObserver(enemyAircraft);
+                        }
+                    }
+                    for (BaseBullet bullet : enemyBullets) {
+                        if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
+                            freezeProp.addObserver(enemyBullet);
+                        }
+                    }
+                }
                 // 英雄机撞击到道具
                 // 道具生效
                 AudioManager.playSound(AudioManager.GET_SUPPLY);
@@ -280,7 +359,6 @@ public class Game extends Pane {
         enemyBullets.removeIf(AbstractFlyingObject::notValid);
         heroBullets.removeIf(AbstractFlyingObject::notValid);
         enemyAircrafts.removeIf(AbstractFlyingObject::notValid);
-        // TODO: 删除无效道具
         props.removeIf(AbstractFlyingObject::notValid);
     }
 
@@ -292,6 +370,37 @@ public class Game extends Pane {
         if (heroAircraft.getHp() <= 0) {
             gameOverFlag = true;
             System.out.println("Game Over!");
+            AudioManager.stopBGM();
+            // 游戏结束，切换到排名页面
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));
+                Parent root = loader.load();
+
+                rankPageCtrl controller = loader.getController();
+                controller.setCurrentScore(score, getDifficultyName());
+
+                Stage stage = (Stage) getScene().getWindow();
+                stage.setScene(new Scene(root, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void updateBossBgm() {
+        boolean hasBossAlive = false;
+        for (AbstractEnemy enemyAircraft : enemyAircrafts) {
+            if (!enemyAircraft.notValid() && enemyAircraft instanceof BossEnemy) {
+                hasBossAlive = true;
+                break;
+            }
+        }
+        if (hasBossAlive && !bossBgmPlaying) {
+            AudioManager.playBGM(AudioManager.BGM_BOSS);
+            bossBgmPlaying = true;
+        } else if (!hasBossAlive && bossBgmPlaying) {
+            AudioManager.playBGM(AudioManager.BGM);
+            bossBgmPlaying = false;
         }
     }
 
@@ -305,8 +414,8 @@ public class Game extends Pane {
         // 背景滚动
         gc.clearRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
 
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT);
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, this.backGroundTop);
+        gc.drawImage(backgroundImage, 0, this.backGroundTop - Main.WINDOW_HEIGHT);
+        gc.drawImage(backgroundImage, 0, this.backGroundTop);
         this.backGroundTop += 1;
         if (this.backGroundTop == Main.WINDOW_HEIGHT) {
             this.backGroundTop = 0;

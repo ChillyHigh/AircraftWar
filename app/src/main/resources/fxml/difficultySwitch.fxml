@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane fx:id="root" prefHeight="768.0" prefWidth="512.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.hitsz.fxml.DifficultySwitchCtrl">
+    <children>
+        <ImageView fitHeight="768.0" fitWidth="512.0" pickOnBounds="true" preserveRatio="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <image>
+                <Image url="@../images/bg3.jpg" />
+            </image>
+        </ImageView>
+
+        <AnchorPane mouseTransparent="true" style="-fx-background-color: linear-gradient(to bottom, rgba(3,11,26,0.55), rgba(4,15,35,0.82));" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+
+        <VBox alignment="TOP_CENTER" spacing="18.0" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="34.0">
+            <padding>
+                <Insets bottom="0.0" left="0.0" right="0.0" top="8.0" />
+            </padding>
+
+            <Label style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: white;" text="选择游戏难度">
+            <VBox.margin>
+               <Insets top="40.0" />
+            </VBox.margin></Label>
+
+            <VBox spacing="14.0" stylesheets="@difficultySwitch.css">
+                <Button fx:id="easyButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectEasy" prefHeight="92.0" styleClass="buttons" text="简单" textFill="WHITE" wrapText="true" />
+
+                <Button fx:id="normalButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectNormal" prefHeight="92.0" styleClass="buttons" text="普通" textFill="WHITE" wrapText="true" />
+
+                <Button fx:id="hardButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectHard" prefHeight="92.0" styleClass="buttons" text="困难" textFill="WHITE" wrapText="true" />
+            <VBox.margin>
+               <Insets top="40.0" />
+            </VBox.margin>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Button fx:id="confirmButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#confirmSelection" prefHeight="54.0" style="-fx-background-color: linear-gradient(to right, #FCE38A, #F6B76B); -fx-background-radius: 18; -fx-font-size: 18px; -fx-font-weight: bold;" text="开始游戏" textFill="#08121F">
+            <opaqueInsets>
+               <Insets />
+            </opaqueInsets>
+            <VBox.margin>
+               <Insets bottom="50.0" />
+            </VBox.margin></Button>
+        </VBox>
+    </children>
+</AnchorPane>

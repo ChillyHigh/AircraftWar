@@ -10,8 +10,7 @@ public class BulletPlusProp extends BaseProp {
 
     @Override
     public void activate() {
-        // 英雄机切换为圆圈射击策略
-        HeroAircraft.getHeroAircraft().setShootStrategy(new CircleShootStrategy());
+        HeroAircraft.getHeroAircraft().setShootStrategy(new CircleShootStrategy(), 10_000L);
         System.out.println("FirePlusSupply active!");
     }
 

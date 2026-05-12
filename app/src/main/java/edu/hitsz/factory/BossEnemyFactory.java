@@ -8,10 +8,10 @@ public class BossEnemyFactory extends EnemyFactory {
     public AbstractEnemy createEnemy() {
         return new BossEnemy(
                 randomLocation(),
-                30,
-                (int) Math.round(Math.random() * 3),
-                0,
-                900);
+                -30,
+                scaleSpeed((int) Math.round(Math.random() * 3)),
+                5,
+                scaleHp(900));
     }
 
 }

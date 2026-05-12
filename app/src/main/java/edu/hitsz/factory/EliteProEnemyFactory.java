@@ -9,8 +9,8 @@ public class EliteProEnemyFactory extends EnemyFactory {
         return new EliteProEnemy(
                 randomLocation(),
                 -30,
-                (int) Math.round(Math.random() * 3),
-                5,
-                60);
+                scaleSpeed((int) Math.round(Math.random() * 3)),
+                scaleSpeed(5),
+                scaleHp(60));
     }
 }

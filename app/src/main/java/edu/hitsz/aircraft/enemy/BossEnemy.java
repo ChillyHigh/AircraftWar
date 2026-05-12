@@ -26,6 +26,9 @@ public class BossEnemy extends AbstractEnemy {
     @Override
     public void forward() {
         super.forward();
+        if (speedY >= 0.1) {
+            speedY *= 0.96;
+        }
         if (locationX < 0 || locationX > Main.WINDOW_WIDTH) {
             speedX = -speedX;
         }
@@ -43,6 +46,15 @@ public class BossEnemy extends AbstractEnemy {
 
         return props;
 
+    }
+
+    @Override
+    public void onBomb() {
+        decreaseHp(200);
+    }
+
+    @Override
+    public void onFreeze() {
     }
 
 }
