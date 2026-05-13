@@ -62,6 +62,7 @@ public class InfernumGame extends AbstractGame {
             exoTwinsManager.update();
             if (exoTwinsManager.isDeathExplosionTriggered() && postExplosionTimer < 0) {
                 postExplosionTimer = EXPLOSION_TIME;
+                score += 1000;
                 explosionFlashAlpha = 0.92;
             }
             if (postExplosionTimer >= 0) {
