@@ -3,6 +3,7 @@ package edu.hitsz.aircraft.enemy;
 import edu.hitsz.aircraft.enemy.exotwins.ApolloEnemy;
 import edu.hitsz.aircraft.enemy.exotwins.ArtemisEnemy;
 import edu.hitsz.aircraft.enemy.exotwins.ExoTwinsState;
+import edu.hitsz.aircraft.enemy.exotwins.combo.ExoTwinsDeathState;
 import edu.hitsz.aircraft.enemy.exotwins.combo.ExoTwinsDashState;
 import edu.hitsz.aircraft.enemy.exotwins.combo.ExoTwinsMachineGunLasersState;
 import edu.hitsz.aircraft.enemy.exotwins.combo.ExoTwinsOverloadState;
@@ -22,6 +23,9 @@ public class ExoTwinsManager {
     private int sharedHp;
     private int phase = 1;
     private int patternIndex = 0;
+    private boolean deathAnimationActive = false;
+    private boolean deathExplosionTriggered = false;
+    private boolean battleFinished = false;
 
     public ExoTwinsManager(ApolloEnemy apollo, ArtemisEnemy artemis, int sharedHp) {
         this.apollo = apollo;
@@ -35,13 +39,13 @@ public class ExoTwinsManager {
     }
 
     public void update() {
-        if (isDefeated()) {
+        if (battleFinished || apollo.notValid() || artemis.notValid()) {
             apollo.vanish();
             artemis.vanish();
             return;
         }
 
-        if (sharedHp <= maxSharedHp / 2) {
+        if (!deathAnimationActive && sharedHp <= maxSharedHp / 2) {
             phase = 2;
         }
         syncSharedHp();
@@ -69,18 +73,29 @@ public class ExoTwinsManager {
     }
 
     public boolean isDefeated() {
-        return sharedHp <= 0 || apollo.notValid() || artemis.notValid();
+        return battleFinished || apollo.notValid() || artemis.notValid();
+    }
+
+    public boolean isDying() {
+        return deathAnimationActive && !battleFinished;
+    }
+
+    public boolean isBattleFinished() {
+        return battleFinished;
+    }
+
+    public boolean isDeathExplosionTriggered() {
+        return deathExplosionTriggered;
     }
 
     public void applyDamage(int damage) {
-        if (damage <= 0 || isDefeated()) {
+        if (damage <= 0 || deathAnimationActive || battleFinished || apollo.notValid() || artemis.notValid()) {
             return;
         }
         sharedHp = Math.max(0, sharedHp - damage);
         syncSharedHp();
         if (sharedHp == 0) {
-            apollo.vanish();
-            artemis.vanish();
+            startDeathAnimation();
         }
     }
 
@@ -89,12 +104,37 @@ public class ExoTwinsManager {
     }
 
     public void advanceCycle() {
+        if (deathAnimationActive || battleFinished) {
+            return;
+        }
         state = createState(nextPattern());
+    }
+
+    public void triggerDeathExplosion() {
+        if (deathExplosionTriggered) {
+            return;
+        }
+        deathExplosionTriggered = true;
+        apollo.vanish();
+        artemis.vanish();
+    }
+
+    public void finishBattle() {
+        battleFinished = true;
     }
 
     private void syncSharedHp() {
         apollo.setSharedHp(sharedHp);
         artemis.setSharedHp(sharedHp);
+    }
+
+    private void startDeathAnimation() {
+        deathAnimationActive = true;
+        sharedHp = 0;
+        syncSharedHp();
+        apollo.beginDeathAnimation();
+        artemis.beginDeathAnimation();
+        state = new ExoTwinsDeathState();
     }
 
     private AttackPattern nextPattern() {

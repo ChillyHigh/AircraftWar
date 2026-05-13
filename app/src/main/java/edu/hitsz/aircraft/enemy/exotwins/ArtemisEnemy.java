@@ -41,6 +41,7 @@ public class ArtemisEnemy extends AbstractEnemy {
     private PostRenderEffect postRenderEffect = PostRenderEffect.NONE;
     private boolean contactDamageEnabled = false;
     private boolean dashMode = false;
+    private boolean deathAnimationMode = false;
     private int sharedHp;
     private ExoTwinsManager manager;
 
@@ -137,11 +138,18 @@ public class ArtemisEnemy extends AbstractEnemy {
 
     @Override
     public List<BaseBullet> shoot() {
+        if (deathAnimationMode) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>();
     }
 
     @Override
     public List<BaseBullet> getBullets() {
+        if (deathAnimationMode) {
+            bullets.clear();
+            return new ArrayList<>();
+        }
         List<BaseBullet> firedBullets = new ArrayList<>(bullets);
         bullets.clear();
         return firedBullets;
@@ -194,6 +202,16 @@ public class ArtemisEnemy extends AbstractEnemy {
 
     public void addBullet(BaseBullet bullet) {
         bullets.add(bullet);
+    }
+
+    public void beginDeathAnimation() {
+        deathAnimationMode = true;
+        bullets.clear();
+        clearExothermalPostRenderEffect();
+        contactDamageEnabled = false;
+        dashMode = false;
+        speedX = 0.0;
+        speedY = 0.0;
     }
 
     public void clearExothermalPostRenderEffect() {
