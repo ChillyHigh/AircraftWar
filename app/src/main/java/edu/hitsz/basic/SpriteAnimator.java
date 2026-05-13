@@ -91,7 +91,10 @@ public final class SpriteAnimator {
         if (index < 0 || index >= framesX) {
             throw new IllegalArgumentException("动画索引无效: " + index);
         }
-//        this.currentFrame = index * framesY;
+        if (this.index != index) {
+            this.currentFrame = index * framesY;
+            this.frameCounter = 0;
+        }
         this.index = index;
     }
 

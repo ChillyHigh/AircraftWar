@@ -1,5 +1,7 @@
 package edu.hitsz.aircraft;
 
+import edu.hitsz.application.AudioManager;
+import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.application.Main;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.factory.PropFactory;
@@ -55,6 +57,10 @@ public abstract class AbstractEnemy extends AbstractAircraft implements PropObse
         return shootStrategy.shoot(this, "enemy");
     }
 
+    public List<BaseBullet> getBullets() {
+        return new LinkedList<>();
+    }
+
     public int getScore() {
         return score;
     }
@@ -87,6 +93,18 @@ public abstract class AbstractEnemy extends AbstractAircraft implements PropObse
     @Override
     public void onBomb() {
         vanish();
+    }
+
+    @Override
+    public void onCollide(AbstractFlyingObject other) {
+        if (other instanceof BaseBullet bullet) {
+            AudioManager.playSound(AudioManager.BULLET_HIT);
+            decreaseHp(bullet.getPower());
+            return;
+        }
+        if (other instanceof HeroAircraft) {
+            vanish();
+        }
     }
 
     @Override

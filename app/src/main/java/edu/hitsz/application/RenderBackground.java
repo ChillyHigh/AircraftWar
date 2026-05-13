@@ -27,16 +27,11 @@ public final class RenderBackground {
         if ((frameCounter & 1) == 0) {
             CLOUD_SHADER.renderFrame();
         }
-
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, backGroundTop - Main.WINDOW_HEIGHT);
-        gc.drawImage(ImageManager.BACKGROUND_IMAGE, 0, backGroundTop);
-
 //        gc.setFill(Color.rgb(48, 57, 70, 0.3));
 //        gc.fillRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
 
         gc.save();
-//        gc.setGlobalAlpha(0.95);
-//        gc.setGlobalBlendMode(BlendMode.SRC_OVER);
+        gc.setGlobalAlpha(opacity);
         gc.setEffect(new GaussianBlur(8));
         gc.drawImage(CLOUD_SHADER.getOutputImage(), 0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         gc.restore();
@@ -45,6 +40,16 @@ public final class RenderBackground {
         gc.setFill(Color.rgb(24, 30, 44, 0.24 * opacity));
         gc.fillRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
         gc.restore();
+    }
+
+    public static void resetFadeIn() {
+        initializeIfNeeded();
+        opacity = 0.0;
+        frameCounter = 0;
+    }
+
+    public static boolean isFullyOpaque() {
+        return opacity >= 0.999;
     }
 
     private static void initializeIfNeeded() {

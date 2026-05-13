@@ -24,6 +24,7 @@ public class AudioManager {
     public static final String ARTEMIS_SPIN_LASERBEAM = "/extraSounds/ArtemisSpinLaserbeam.wav";
     public static final String GATLING_LASER_FIRE_START = "/extraSounds/GatlingLaserFireStart.wav";
     public static final String GATLING_LASER_FIRE_LOOP = "/extraSounds/GatlingLaserFireLoop.wav";
+    public static final String EXO_TWINS_BGM = "/extraSounds/ExoTwinsBoss.wav";
 
     /**
      * 播放背景音乐，循环播放<br>

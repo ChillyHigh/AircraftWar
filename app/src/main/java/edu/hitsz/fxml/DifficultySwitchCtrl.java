@@ -5,6 +5,7 @@ import edu.hitsz.application.Main;
 import edu.hitsz.application.game.AbstractGame;
 import edu.hitsz.application.game.EasyGame;
 import edu.hitsz.application.game.HardGame;
+import edu.hitsz.application.game.InfernumGame;
 import edu.hitsz.application.game.NormalGame;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -25,6 +26,9 @@ public class DifficultySwitchCtrl {
 
     @FXML
     private Button hardButton;
+
+    @FXML
+    private Button infernumButton;
 
     private Difficulty difficulty = Difficulty.EASY;
 
@@ -50,12 +54,18 @@ public class DifficultySwitchCtrl {
     }
 
     @FXML
+    private void selectInfernum() {
+        selectDifficulty(Difficulty.INFERNUM);
+    }
+
+    @FXML
     private void confirmSelection() {
         try {
             AbstractGame game = switch (difficulty) {
                 case EASY -> new EasyGame();
                 case NORMAL -> new NormalGame();
                 case HARD -> new HardGame();
+                case INFERNUM -> new InfernumGame();
             };
             Scene gameScene = new Scene(game, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
 
@@ -74,16 +84,18 @@ public class DifficultySwitchCtrl {
         easyButton.getStyleClass().remove("selected-btn");
         normalButton.getStyleClass().remove("selected-btn");
         hardButton.getStyleClass().remove("selected-btn");
+        infernumButton.getStyleClass().remove("selected-btn");
 
         switch (difficulty) {
             case EASY -> easyButton.getStyleClass().add("selected-btn");
             case NORMAL -> normalButton.getStyleClass().add("selected-btn");
             case HARD -> hardButton.getStyleClass().add("selected-btn");
+            case INFERNUM -> infernumButton.getStyleClass().add("selected-btn");
         }
 
     }
 
     private enum Difficulty {
-        EASY, NORMAL, HARD
+        EASY, NORMAL, HARD, INFERNUM
     }
 }

@@ -11,7 +11,7 @@ public class ApolloFireballBullet extends EnemyBullet {
     private final SpriteAnimator animator;
 
     public ApolloFireballBullet(int locationX, int locationY, int speedX, int speedY, int power) {
-        super(locationX, locationY, speedX, speedY, power);
+        super(locationX, locationY, speedX, speedY, power, Math.toDegrees(Math.atan2(speedY, speedX)) - 90.0);
         this.animator = new SpriteAnimator("apollo_fireball", FRAME_WIDTH, FRAME_HEIGHT, 1, 6, 2, 0);
         this.rotation = Math.toDegrees(Math.atan2(speedY, speedX)) - 90.0;
         this.width = FRAME_WIDTH;

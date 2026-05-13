@@ -12,6 +12,7 @@ import edu.hitsz.application.WindowShaker;
 import edu.hitsz.bullet.ArtemisRayBullet;
 
 public class ExoTwinsOverloadState extends ExoTwinsState {
+    private static final int OVERLOAD_LOOP_COUNT_BEFORE_ADVANCE = 3;
 
     private enum ArtemisPhase {
         HOVER_REDIRECT,
@@ -21,44 +22,33 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
         LASER
     }
 
-    private enum ApolloPhase {
-        SPIN,
-        DASH_DELAY,
-        DASH_REPOSITION,
-        DASHING
-    }
-
     private static final int ARTEMIS_HOVER_REDIRECT_TIME = 45;
     private static final int ARTEMIS_SLOWDOWN_TIME = 15;
     private static final int ARTEMIS_CHARGE_UP_TIME = 60;
     private static final int ARTEMIS_GLEAM_TIME = 45;
     private static final int ARTEMIS_LASER_TIME = ArtemisRayBullet.LIFETIME;
+    private static final int ARTEMIS_ATTACK_DELAY = 36;
 
     private static final double ARTEMIS_HOVER_RADIUS_X = 210.0;
     private static final double ARTEMIS_HOVER_RADIUS_Y = 160.0;
     private static final double ARTEMIS_REPOSITION_SPEED_MIN = 5.0;
     private static final double ARTEMIS_REPOSITION_SPEED_MAX = 13.0;
     private static final double ARTEMIS_LASER_STRAFE_SPEED = 16.0;
-    private static final int ARTEMIS_LASER_POWER = 0;
+    private static final int ARTEMIS_LASER_POWER = 30;
 
-    private static final int APOLLO_SPIN_TIME = 45;
-    private static final int APOLLO_DASH_DELAY = 14;
-    private static final int APOLLO_DASH_REPOSITION_TIME = 5;
-    private static final int APOLLO_DASH_TIME = 27;
-
-    private static final double APOLLO_SPIN_RADIUS_START = 150.0;
-    private static final double APOLLO_SPIN_RADIUS_GROWTH = 3.0;
-    private static final double APOLLO_DASH_SPEED = 52.0;
-    private static final double APOLLO_TRAIL_SHOOT_SPEED = 6.5;
-    private static final double APOLLO_RESET_DISTANCE = 330.0;
-    private static final int APOLLO_TRAIL_RELEASE_RATE = 4;
-    private static final int APOLLO_TRAIL_POWER = 0;
+    private static final int APOLLO_REDIRECT_TIME = 26;
+    private static final int APOLLO_TELEGRAPH_TIME = 20;
+    private static final int APOLLO_DASH_TIME = 14;
+    private static final int APOLLO_CYCLE_TIME =
+            APOLLO_REDIRECT_TIME + APOLLO_TELEGRAPH_TIME + APOLLO_DASH_TIME + 40;
+    private static final double APOLLO_DASH_SPEED = 48.0;
+    private static final double APOLLO_SLOWDOWN_FACTOR = 0.72;
+    private static final double APOLLO_SIDE_DISTANCE = 230.0;
+    private static final double APOLLO_VERTICAL_OFFSET = -40.0;
 
     private ArtemisPhase artemisPhase = ArtemisPhase.HOVER_REDIRECT;
-    private ApolloPhase apolloPhase = ApolloPhase.SPIN;
 
     private int artemisPhaseTimer = 0;
-    private int apolloPhaseTimer = 0;
 
     private double artemisHoverOffsetAngle = Math.PI / 4.0;
     private double artemisBeamDirectionX = 0.0;
@@ -66,15 +56,16 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
     private double artemisStrafeDirectionX = 1.0;
     private double artemisStrafeDirectionY = 0.0;
 
-    private double apolloSpinOffsetAngle = 0.0;
-    private double apolloSpinRadius = APOLLO_SPIN_RADIUS_START;
     private double apolloDashVelocityX = 0.0;
     private double apolloDashVelocityY = 0.0;
+    private int completedLoops = 0;
 
     @Override
     public void update(ExoTwinsManager exoTwinsManager) {
+        exoTwinsManager.getApollo().setContactDamageEnabled(false);
+        exoTwinsManager.getArtemis().setContactDamageEnabled(false);
         updateArtemis(exoTwinsManager);
-//        updateApollo(exoTwinsManager);
+        updateApollo(exoTwinsManager);
     }
 
     private void updateArtemis(ExoTwinsManager exoTwinsManager) {
@@ -114,7 +105,7 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
                 moveSpeed,
                 8.0,
                 0.80,
-                7);
+                exoTwinsManager.getPhase() == 1 ? 7 : 8);
 
         if (artemisPhaseTimer == ARTEMIS_HOVER_REDIRECT_TIME) {
             nextArtemisPhase(ArtemisPhase.SLOWDOWN);
@@ -133,7 +124,7 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
                 0.0,
                 7.5,
                 0.72,
-                7);
+                exoTwinsManager.getPhase() == 1 ? 7 : 8);
 
         if (artemisPhaseTimer == ARTEMIS_SLOWDOWN_TIME) {
             nextArtemisPhase(ArtemisPhase.CHARGE_UP);
@@ -211,7 +202,7 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
                 artemisStrafeDirectionY = rightY;
             }
 
-            artemis.queueExothermalDisintegrationRay(ARTEMIS_LASER_POWER);
+            artemis.addBullet(new ArtemisRayBullet(artemis, ARTEMIS_LASER_POWER));
             AudioManager.playSound(AudioManager.ARTEMIS_SPIN_LASERBEAM);
             WindowShaker.startScreenShake(18.0, 0.94, 30);
         }
@@ -228,135 +219,121 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
                 8);
 
         if (artemisPhaseTimer == ARTEMIS_LASER_TIME) {
+            completedLoops++;
+            if (completedLoops >= OVERLOAD_LOOP_COUNT_BEFORE_ADVANCE) {
+                exoTwinsManager.advanceCycle();
+                return;
+            }
             nextArtemisPhase(ArtemisPhase.HOVER_REDIRECT);
+            apolloDashVelocityX = 0.0;
+            apolloDashVelocityY = 0.0;
         }
     }
 
     private void updateApollo(ExoTwinsManager exoTwinsManager) {
-        apolloPhaseTimer++;
-        switch (apolloPhase) {
-            case SPIN -> updateApolloSpin(exoTwinsManager);
-            case DASH_DELAY -> updateApolloDashDelay(exoTwinsManager);
-            case DASH_REPOSITION -> updateApolloDashReposition(exoTwinsManager);
-            case DASHING -> updateApolloDashing(exoTwinsManager);
-        }
-    }
-
-    private void updateApolloSpin(ExoTwinsManager exoTwinsManager) {
         ApolloEnemy apollo = exoTwinsManager.getApollo();
 
-        if (apolloPhaseTimer == 1) {
-            apolloSpinOffsetAngle = ThreadLocalRandom.current().nextInt(8) * Math.PI / 4.0;
-            apolloSpinRadius = APOLLO_SPIN_RADIUS_START;
+        if (artemisPhaseTimer < ARTEMIS_ATTACK_DELAY) {
+            updateApolloRedirect(apollo, 0, 1.0);
+            return;
         }
 
+        int attackTime = artemisPhaseTimer - ARTEMIS_ATTACK_DELAY;
+        int cycleWrapped = attackTime % APOLLO_CYCLE_TIME;
+
+        if (cycleWrapped < APOLLO_REDIRECT_TIME) {
+            updateApolloRedirect(apollo, cycleWrapped, cycleWrapped / (double) APOLLO_REDIRECT_TIME);
+            return;
+        }
+
+        if (cycleWrapped < APOLLO_REDIRECT_TIME + APOLLO_TELEGRAPH_TIME) {
+            updateApolloTelegraph(apollo, cycleWrapped);
+            return;
+        }
+
+        if (cycleWrapped < APOLLO_REDIRECT_TIME + APOLLO_TELEGRAPH_TIME + APOLLO_DASH_TIME) {
+            updateApolloDash(apollo, cycleWrapped);
+            return;
+        }
+
+        updateApolloSlowdown(apollo);
+    }
+
+    private void updateApolloRedirect(ApolloEnemy apollo, int cycleWrapped, double progress) {
         apollo.setState(1);
-        apolloSpinOffsetAngle += Math.PI / 38.0;
 
-        double targetX = Math.clamp(
-                hero.getLocationX() + Math.cos(apolloSpinOffsetAngle) * apolloSpinRadius,
-                70.0,
-                Main.WINDOW_WIDTH - 70.0);
-        double targetY = Math.clamp(
-                hero.getLocationY() + Math.sin(apolloSpinOffsetAngle) * apolloSpinRadius,
-                70.0,
-                Main.WINDOW_HEIGHT - 150.0);
+        double leftX = clamp(hero.getLocationX() - APOLLO_SIDE_DISTANCE, 70.0, Main.WINDOW_WIDTH - 70.0);
+        double rightX = clamp(hero.getLocationX() + APOLLO_SIDE_DISTANCE, 70.0, Main.WINDOW_WIDTH - 70.0);
+        double leftY = clamp(hero.getLocationY() + APOLLO_VERTICAL_OFFSET, 70.0, Main.WINDOW_HEIGHT - 140.0);
+        double rightY = leftY;
 
-        double moveSpeed = apolloPhaseTimer <= APOLLO_SPIN_TIME - 14
-                ? lerp(4.0, 11.0, apolloPhaseTimer / (double) APOLLO_SPIN_TIME)
-                : 4.0;
+        double distanceLeft = Math.hypot(apollo.getLocationX() - leftX, apollo.getLocationY() - leftY);
+        double distanceRight = Math.hypot(apollo.getLocationX() - rightX, apollo.getLocationY() - rightY);
+
+        double targetX = distanceLeft < distanceRight ? leftX : rightX;
+        double targetY = distanceLeft < distanceRight ? leftY : rightY;
+        double[] predictedHero = predictedHeroPosition(25.0);
 
         apollo.setDesiredState(
                 targetX,
                 targetY,
-                hero.getLocationX(),
-                hero.getLocationY(),
-                moveSpeed,
+                predictedHero[0],
+                predictedHero[1],
+                lerp(7.0, 13.0, progress),
                 12.0,
-                0.78,
-                7);
+                0.81,
+                1);
+    }
 
-        apolloSpinRadius += APOLLO_SPIN_RADIUS_GROWTH;
-        if (apolloPhaseTimer == 12) {
+    private void updateApolloTelegraph(ApolloEnemy apollo, int cycleWrapped) {
+        apollo.setState(1);
+
+        double facingAngle = Math.toRadians(apollo.getRotation() - 90.0);
+        double backX = apollo.getLocationX() - Math.cos(facingAngle) * 36.0;
+        double backY = apollo.getLocationY() - Math.sin(facingAngle) * 36.0;
+        double[] predictedHero = predictedHeroPosition(18.0);
+
+        apollo.setDesiredState(
+                backX,
+                backY,
+                predictedHero[0],
+                predictedHero[1],
+                6.0,
+                18.0,
+                0.74,
+                1);
+
+        if (cycleWrapped == APOLLO_REDIRECT_TIME + Math.max(1, (int) (APOLLO_TELEGRAPH_TIME * 0.32))) {
             AudioManager.playSound(AudioManager.EXO_TWINS_DASH_TELEGRAPH);
         }
 
-        if (apolloPhaseTimer == APOLLO_SPIN_TIME) {
-            nextApolloPhase(ApolloPhase.DASH_DELAY);
-        }
-    }
-
-    private void updateApolloDashDelay(ExoTwinsManager exoTwinsManager) {
-        ApolloEnemy apollo = exoTwinsManager.getApollo();
-        apollo.setState(1);
-        apollo.setDesiredState(
-                apollo.getLocationX(),
-                apollo.getLocationY(),
-                hero.getLocationX(),
-                hero.getLocationY(),
-                0.0,
-                16.0,
-                0.72,
-                7);
-
-        if (apolloPhaseTimer == APOLLO_DASH_DELAY) {
-            nextApolloPhase(ApolloPhase.DASH_REPOSITION);
-        }
-    }
-
-    private void updateApolloDashReposition(ExoTwinsManager exoTwinsManager) {
-        ApolloEnemy apollo = exoTwinsManager.getApollo();
-        apollo.setState(1);
-        apollo.setDesiredState(
-                apollo.getLocationX(),
-                apollo.getLocationY(),
-                hero.getLocationX(),
-                hero.getLocationY(),
-                8.0,
-                20.0,
-                0.70,
-                7);
-
-        if (apolloPhaseTimer == 1) {
+        if (cycleWrapped == APOLLO_REDIRECT_TIME + APOLLO_TELEGRAPH_TIME - 1) {
             double dashAngle = Math.toRadians(apollo.getRotation() - 90.0);
             apolloDashVelocityX = Math.cos(dashAngle) * APOLLO_DASH_SPEED;
             apolloDashVelocityY = Math.sin(dashAngle) * APOLLO_DASH_SPEED;
-            AudioManager.playSound(AudioManager.EXO_TWINS_DASH);
-            WindowShaker.startScreenShake(12.0, 0.90, 16);
-        }
-
-        if (apolloPhaseTimer == APOLLO_DASH_REPOSITION_TIME) {
-            nextApolloPhase(ApolloPhase.DASHING);
         }
     }
 
-    private void updateApolloDashing(ExoTwinsManager exoTwinsManager) {
-        ApolloEnemy apollo = exoTwinsManager.getApollo();
+    private void updateApolloDash(ApolloEnemy apollo, int cycleWrapped) {
+        if (cycleWrapped == APOLLO_REDIRECT_TIME + APOLLO_TELEGRAPH_TIME) {
+            AudioManager.playSound(AudioManager.EXO_TWINS_DASH);
+            WindowShaker.startScreenShake(10.0, 0.88, APOLLO_DASH_TIME);
+        }
+
         apollo.setState(2);
         apollo.setDashVelocity(apolloDashVelocityX, apolloDashVelocityY);
+    }
 
-        if (apolloPhaseTimer % APOLLO_TRAIL_RELEASE_RATE == APOLLO_TRAIL_RELEASE_RATE - 1) {
-            double reverseAngle = Math.atan2(-apolloDashVelocityY, -apolloDashVelocityX);
-            apollo.queuePlasmaBulletByAngle(
-                    reverseAngle + randomSpread(Math.toRadians(18.0)),
-                    APOLLO_TRAIL_SHOOT_SPEED,
-                    APOLLO_TRAIL_POWER);
-        }
-
-        if (apolloPhaseTimer == APOLLO_DASH_TIME) {
-            resetApolloPosition(apollo);
-            nextApolloPhase(ApolloPhase.SPIN);
-        }
+    private void updateApolloSlowdown(ApolloEnemy apollo) {
+        apollo.setState(2);
+        apolloDashVelocityX *= APOLLO_SLOWDOWN_FACTOR;
+        apolloDashVelocityY *= APOLLO_SLOWDOWN_FACTOR;
+        apollo.setDashVelocity(apolloDashVelocityX, apolloDashVelocityY);
     }
 
     private void nextArtemisPhase(ArtemisPhase nextPhase) {
         artemisPhase = nextPhase;
         artemisPhaseTimer = 0;
-    }
-
-    private void nextApolloPhase(ApolloPhase nextPhase) {
-        apolloPhase = nextPhase;
-        apolloPhaseTimer = 0;
     }
 
     private double[] computeArtemisHoverDestination() {
@@ -371,13 +348,11 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
         return new double[]{hoverDestinationX, hoverDestinationY};
     }
 
-    private void resetApolloPosition(ApolloEnemy apollo) {
-        double[] awayDirection = normalizedDirection(
-                apollo.getLocationX() - hero.getLocationX(),
-                apollo.getLocationY() - hero.getLocationY());
-        apollo.setLocation(
-                Math.clamp(hero.getLocationX() + awayDirection[0] * APOLLO_RESET_DISTANCE, 70.0, Main.WINDOW_WIDTH - 70.0),
-                Math.clamp(hero.getLocationY() + awayDirection[1] * APOLLO_RESET_DISTANCE, 70.0, Main.WINDOW_HEIGHT - 160.0));
+    private double[] predictedHeroPosition(double lookAheadFrames) {
+        return new double[]{
+                hero.getLocationX(),
+                hero.getLocationY()
+        };
     }
 
     private double[] normalizedDirection(double dx, double dy) {
@@ -393,12 +368,12 @@ public class ExoTwinsOverloadState extends ExoTwinsState {
         return wrapped < 0.0 ? wrapped + Math.PI * 2.0 : wrapped;
     }
 
-    private double randomSpread(double spread) {
-        return (ThreadLocalRandom.current().nextDouble() * 2.0 - 1.0) * spread;
-    }
-
     private double lerp(double start, double end, double t) {
         return start + (end - start) * Math.clamp(t, 0.0, 1.0);
+    }
+
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
 }
