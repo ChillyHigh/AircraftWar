@@ -237,6 +237,9 @@ public abstract class AbstractGame extends Pane {
         }
     }
 
+    protected void renderForegroundLayer(GraphicsContext gc) {
+    }
+
     // ***********************
     // Action 各部分
     // ***********************
@@ -389,23 +392,31 @@ public abstract class AbstractGame extends Pane {
     private void checkResultAction() {
         // 游戏结束检查英雄机是否存活
         if (heroAircraft.getHp() <= 0) {
-            gameOverFlag = true;
-            System.out.println("Game Over!");
-            AudioManager.stopBGM();
+            finishGame(true);
+        }
+    }
+
+    protected void finishGame(boolean playGameOverSound) {
+        if (gameOverFlag) {
+            return;
+        }
+        gameOverFlag = true;
+        System.out.println("Game Over!");
+        AudioManager.stopBGM();
+        if (playGameOverSound) {
             AudioManager.playSound(AudioManager.GAME_OVER);
-            // 游戏结束，切换到排名页面
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));
-                Parent root = loader.load();
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));
+            Parent root = loader.load();
 
-                rankPageCtrl controller = loader.getController();
-                controller.setCurrentScore(score, getDifficultyName());
+            rankPageCtrl controller = loader.getController();
+            controller.setCurrentScore(score, getDifficultyName());
 
-                Stage stage = (Stage) getScene().getWindow();
-                stage.setScene(new Scene(root, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Stage stage = (Stage) getScene().getWindow();
+            stage.setScene(new Scene(root, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -424,6 +435,7 @@ public abstract class AbstractGame extends Pane {
         renderObjects(enemyAircrafts);
         renderObjects(props);
         heroAircraft.render(gc);
+        renderForegroundLayer(gc);
 
         gc.restore();
         paintScoreAndLife();
