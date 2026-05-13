@@ -17,9 +17,9 @@ import edu.hitsz.factory.EliteProEnemyFactory;
 import edu.hitsz.factory.EnemyFactory;
 import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.fxml.rankPageCtrl;
+import edu.hitsz.observer.PropSubject;
 import edu.hitsz.prop.BaseProp;
 import edu.hitsz.prop.BombProp;
-import edu.hitsz.prop.FreezeProp;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -343,31 +343,34 @@ public abstract class AbstractGame extends Pane {
                 continue;
             }
             if (heroAircraft.collidesWith(prop)) {
-                if (prop instanceof BombProp bombProp) {
+                List<AbstractEnemy> bombTargets = null;
+                if (prop instanceof BombProp) {
+                    bombTargets = new LinkedList<>();
+                }
+                if (prop instanceof PropSubject propSubject) {
                     for (AbstractEnemy enemyAircraft : enemyAircrafts) {
                         if (!enemyAircraft.notValid()) {
-                            bombProp.addObserver(enemyAircraft);
+                            if (bombTargets != null) {
+                                bombTargets.add(enemyAircraft);
+                            }
+                            propSubject.addObserver(enemyAircraft);
                         }
                     }
                     for (BaseBullet bullet : enemyBullets) {
                         if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
-                            bombProp.addObserver(enemyBullet);
-                        }
-                    }
-                } else if (prop instanceof FreezeProp freezeProp) {
-                    for (AbstractEnemy enemyAircraft : enemyAircrafts) {
-                        if (!enemyAircraft.notValid()) {
-                            freezeProp.addObserver(enemyAircraft);
-                        }
-                    }
-                    for (BaseBullet bullet : enemyBullets) {
-                        if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
-                            freezeProp.addObserver(enemyBullet);
+                            propSubject.addObserver(enemyBullet);
                         }
                     }
                 }
                 AudioManager.playSound(AudioManager.GET_SUPPLY);
                 prop.activate();
+                if (bombTargets != null) {
+                    for (AbstractEnemy enemyAircraft : bombTargets) {
+                        if (enemyAircraft.notValid()) {
+                            score += enemyAircraft.getScore();
+                        }
+                    }
+                }
                 prop.vanish();
             }
         }
