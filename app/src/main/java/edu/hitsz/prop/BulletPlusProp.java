@@ -1,15 +1,16 @@
 package edu.hitsz.prop;
 
 import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.strategy.CircleShootStrategy;
 
 public class BulletPlusProp extends BaseProp {
-    public BulletPlusProp(int locationX, int locationY, int speedX, int speedY) {
+    public BulletPlusProp(double locationX, double locationY, double speedX, double speedY) {
         super(locationX, locationY, speedX, speedY);
     }
 
     @Override
-    public void activate(HeroAircraft heroAircraft) {
-        // 英雄机增加子弹数量
+    public void activate() {
+        HeroAircraft.getHeroAircraft().setShootStrategy(new CircleShootStrategy(), 10_000L);
         System.out.println("FirePlusSupply active!");
     }
 

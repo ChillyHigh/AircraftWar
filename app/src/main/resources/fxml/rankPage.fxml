@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane fx:id="root" prefHeight="768.0" prefWidth="512.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.hitsz.fxml.rankPageCtrl">
+    <children>
+        <ImageView fitHeight="768.0" fitWidth="512.0" pickOnBounds="true" preserveRatio="false">
+            <image>
+                <Image url="@../images/bg3.jpg" />
+            </image>
+        </ImageView>
+        <AnchorPane mouseTransparent="true" style="-fx-background-color: linear-gradient(to bottom, rgba(3,11,26,0.55), rgba(4,15,35,0.82));" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <VBox prefHeight="768.0" prefWidth="512.0">
+            <children>
+                <Label alignment="CENTER" prefHeight="60.0" prefWidth="512.0" style="-fx-font-size: 30px; -fx-font-weight: bold;" text="游戏结束!" textFill="#d30000" />
+            <Label fx:id="scoreLabel" alignment="CENTER" prefHeight="60.0" prefWidth="512.0" style="-fx-font-size: 20px; -fx-font-weight: bold;" text="本次得分: " textFill="WHITE" />
+            <Label fx:id="difficultyLabel" alignment="CENTER" prefHeight="40.0" prefWidth="512.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="当前榜单: " textFill="WHITE" />
+                <TableView fx:id="rankTable" prefHeight="516.0" prefWidth="512.0">
+                    <columns>
+                        <TableColumn fx:id="nameCol" prefWidth="200.0" text="玩家名" />
+                        <TableColumn fx:id="scoreCol" prefWidth="122.0" text="得分" />
+                        <TableColumn fx:id="timeCol" prefWidth="189.0" text="时间" />
+                    </columns>
+                    <VBox.margin>
+                        <Insets top="30.0" />
+                    </VBox.margin>
+                </TableView>
+            </children>
+            <padding>
+                <Insets top="50.0" />
+            </padding>
+        </VBox>
+    </children>
+</AnchorPane>

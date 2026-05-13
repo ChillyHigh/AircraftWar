@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class EnemyFactory
+{
+    + {abstract} createEnemy(): AbstractEnemy
+    # randomLocation(): int
+}
+
+class MobEnemyFactory
+{
+    + createEnemy(): AbstractEnemy
+}
+
+class EliteEnemyFactory
+{
+    + createEnemy(): AbstractEnemy
+}
+
+class ElitePlusEnemyFactory
+{
+    + createEnemy(): AbstractEnemy
+}
+
+class EliteProEnemyFactory
+{
+    + createEnemy(): AbstractEnemy
+}
+
+class BossEnemyFactory
+{
+    + createEnemy(): AbstractEnemy
+}
+
+abstract class AbstractEnemy
+{
+    + AbstractEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+class MobEnemy
+{
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+class EliteEnemy
+{
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+class ElitePlusEnemy
+{
+    + ElitePlusEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+class EliteProEnemy
+{
+    + EliteProEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+class BossEnemy
+{
+    + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+}
+
+EnemyFactory <|-- MobEnemyFactory
+EnemyFactory <|-- EliteEnemyFactory
+EnemyFactory <|-- ElitePlusEnemyFactory
+EnemyFactory <|-- EliteProEnemyFactory
+EnemyFactory <|-- BossEnemyFactory
+
+AbstractEnemy <|-- MobEnemy
+AbstractEnemy <|-- EliteEnemy
+AbstractEnemy <|-- ElitePlusEnemy
+AbstractEnemy <|-- EliteProEnemy
+AbstractEnemy <|-- BossEnemy
+
+MobEnemyFactory ..> MobEnemy
+EliteEnemyFactory ..> EliteEnemy
+ElitePlusEnemyFactory ..> ElitePlusEnemy
+EliteProEnemyFactory ..> EliteProEnemy
+BossEnemyFactory ..> BossEnemy
+
+@enduml

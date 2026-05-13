@@ -6,7 +6,7 @@ import edu.hitsz.basic.AbstractFlyingObject;
 
 public abstract class BaseProp extends AbstractFlyingObject {
 
-    public BaseProp(int locationX, int locationY, int speedX, int speedY) {
+    public BaseProp(double locationX, double locationY, double speedX, double speedY) {
         super(locationX, locationY, speedX, speedY);
     }
 
@@ -15,22 +15,19 @@ public abstract class BaseProp extends AbstractFlyingObject {
         super.forward();
 
         // 判定 x 轴出界
-        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
+        if (locationX <= -getWidth() * scale / 2.0 || locationX >= Main.WINDOW_WIDTH + getWidth() * scale / 2.0) {
             vanish();
         }
 
         // 判定 y 轴出界
-        if (speedY > 0 && locationY >= Main.WINDOW_HEIGHT) {
+        if (locationY >= Main.WINDOW_HEIGHT + getHeight() * scale / 2.0 || locationY <= -getHeight() * scale / 2.0) {
             // 向下飞行出界
-            vanish();
-        } else if (locationY <= 0) {
-            // 向上飞行出界
             vanish();
         }
     }
 
     // 道具被英雄机获得后激活效果
-    public void activate(HeroAircraft heroAircraft) {
+    public void activate() {
     }
 
 }

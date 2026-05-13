@@ -1,27 +1,14 @@
 package edu.hitsz.application;
 
-import javafx.scene.media.AudioClip;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import java.net.URL;
+import edu.hitsz.thread.MusicThread;
 
 /**
  * 音频管理器，负责游戏中所有音效和背景音乐的播放
  */
 public class AudioManager {
-    /**
-     * 音效缓存，存储已加载的音效，避免重复加载同一音效文件
-     */
-    private static Map<String, AudioClip> sfxCache = new ConcurrentHashMap<>();
-
-    /**
-     * 媒体播放器，播放长的背景音乐
-     */
-    private static MediaPlayer bgmPlayer;
+    private static final Object BGM_LOCK = new Object();
+    private static MusicThread bgmThread;
+    private static String currentBgmPath;
 
     public static final String BGM = "/videos/bgm.wav";
     public static final String BGM_BOSS = "/videos/bgm_boss.wav";
@@ -45,42 +32,44 @@ public class AudioManager {
      * @param bgmPath 背景音乐文件路径
      */
     public static void playBGM(String bgmPath) {
-        // 停止当前背景音乐
-        stopBGM();
+        synchronized (BGM_LOCK) {
+            if (bgmPath != null && bgmPath.equals(currentBgmPath) && bgmThread != null && bgmThread.isAlive()) {
+                return;
+            }
 
-        // 加载新的背景音乐
-        Media media = new Media(resolveResourceUrl(bgmPath));
-        bgmPlayer = new MediaPlayer(media);
-        bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE); // 循环播放
-        bgmPlayer.play();
+            stopCurrentBgmLocked();
+            MusicThread nextThread = new MusicThread(bgmPath, true);
+            bgmThread = nextThread;
+            currentBgmPath = bgmPath;
+            nextThread.start();
+        }
     }
 
     /**
      * 停止背景音乐
      */
     public static void stopBGM() {
-        if (bgmPlayer != null) {
-            bgmPlayer.stop();
-            bgmPlayer.dispose();
-            bgmPlayer = null;
+        synchronized (BGM_LOCK) {
+            stopCurrentBgmLocked();
+            bgmThread = null;
+            currentBgmPath = null;
         }
     }
 
     public static void playSound(String sfxPath) {
-        AudioClip clip = sfxCache.computeIfAbsent(sfxPath, path -> new AudioClip(resolveResourceUrl(path)));
-        if (clip != null) {
-            clip.play();
-        }
+        MusicThread sfxThread = new MusicThread(sfxPath);
+        sfxThread.start();
     }
 
-    /**
-     * 解析url路径，返回JavaFX可用的资源路径
-     */
-    private static String resolveResourceUrl(String path) {
-        URL url = AudioManager.class.getResource(path);
-        if (url == null) {
-            throw new IllegalArgumentException("未找到音频资源: " + path);
+    private static void stopCurrentBgmLocked() {
+        if (bgmThread == null) {
+            return;
         }
-        return url.toExternalForm();
+        bgmThread.stopMusic();
+        try {
+            bgmThread.join(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

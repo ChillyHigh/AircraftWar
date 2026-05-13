@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface UserDataDao
+{
+    + getAllUserData(): List<UserData>
+    + saveUserData(): void
+    + addUserData(userData: UserData): void
+    + deleteUserData(id: int): void
+}
+
+class UserDataDaoImpl
+{
+    - userdata: List<UserData>
+    - filePath: String
+    + getAllUserData(): List<UserData>
+    + saveUserData(): void
+    + addUserData(userData: UserData): void
+    + deleteUserData(id: int): void
+    + nextId(): int
+}
+
+class UserData
+{
+    - id: int
+    - username: String
+    - score: int
+    - time: String
+}
+
+UserDataDao <|.. UserDataDaoImpl
+UserDataDaoImpl ..> UserData
+
+@enduml
