@@ -12,7 +12,7 @@ import javafx.scene.canvas.GraphicsContext;
 public class InfernumGame extends AbstractGame {
 
     private static final int EXO_TWINS_SPAWN_SCORE = 2000;
-    private static final int EXO_TWINS_HP = 7000;
+    private static final int EXO_TWINS_HP = 10000;
     private static final int EXPLOSION_TIME = 75;
     private static final double EXPLOSION_FLASH_DECAY = 0.90;
 
