@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
  * @author hitsz
  */
 public abstract class AbstractFlyingObject {
+    protected double INIT_ANGLE;
 
     //图片中心位置坐标
     protected double locationX;
@@ -25,9 +26,6 @@ public abstract class AbstractFlyingObject {
 
     // 对象的旋转角度，单位：角度
     protected double rotation = 0.0;
-
-    // 初始的角度，跟图片有关，默认是0度
-    protected double initRotation = 0.0;
 
     // 对象的旋转速度，单位：角度/帧
     protected double omega = 0.0;
@@ -54,7 +52,6 @@ public abstract class AbstractFlyingObject {
         this.locationY = locationY;
         this.speedX = speedX;
         this.speedY = speedY;
-        hitBox = createDefaultHitBox();
     }
 
     /**
@@ -63,51 +60,34 @@ public abstract class AbstractFlyingObject {
     public void forward() {
         locationX += speedX;
         locationY += speedY;
-//        handleBoundary();
     }
 
-//    /**
-//     * 遇到边界的处理方法
-//     */
-//    protected void handleBoundary() {
-//        if (locationX <= 0 || locationX >= Main.WINDOW_WIDTH) {
-//            // 横向超出边界后反向
-//            speedX = -speedX;
-//        }
-//    }
+    public boolean collidesWith(AbstractFlyingObject flyingObject) {
+        return !notValid()
+                && !flyingObject.notValid()
+                && this.getHitBox().isCollidingWith(flyingObject.getHitBox());
+    }
 
-    /**
-     * 碰撞检测，当对方坐标进入我方范围，判定我方击中<br>
-     * 对方与我方覆盖区域有交叉即判定撞击。
-     * <br>
-     * 非飞机对象区域：
-     * 横向，[x - width/2, x + width/2]
-     * 纵向，[y - height/2, y + height/2]
-     * <br>
-     * 飞机对象区域：
-     * 横向，[x - width/2, x + width/2]
-     * 纵向，[y - height/4, y + height/4]
-     *
-     * @param flyingObject 撞击对方
-     * @return true: 我方被击中; false 我方未被击中
-     */
-    public boolean crash(AbstractFlyingObject flyingObject) {
-        return this.getHitBox().isCollidingWith(flyingObject.getHitBox());
+    public void onCollide(AbstractFlyingObject other) {
+        // 默认无额外碰撞行为
     }
 
     public HitBox getHitBox() {
+        if (hitBox == null) {
+            hitBox = createDefaultHitBox();
+        }
         return hitBox;
     }
 
     protected HitBox createDefaultHitBox() {
-        double hitBoxWidth = getWidth() * scale;
-        double hitBoxHeight = getHeight() * scale;
+        double hitBoxWidth = getWidth();
+        double hitBoxHeight = getHeight();
 
         if (this instanceof AbstractAircraft) {
             hitBoxHeight /= 2.0;
         }
 
-        return new HitBox(0, 0, hitBoxWidth, hitBoxHeight, this);
+        return new RectHitBox(this, 0.0, 0.0, hitBoxWidth, hitBoxHeight, scale);
     }
 
     protected void setHitBox(HitBox hitBox) {
@@ -172,6 +152,22 @@ public abstract class AbstractFlyingObject {
         return height;
     }
 
+    public double getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(double rotation) {
+        this.rotation = rotation;
+    }
+
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+
     public boolean notValid() {
         return !this.isValid;
     }
@@ -189,14 +185,11 @@ public abstract class AbstractFlyingObject {
         if (notValid()) {
             return;
         }
-        Image image = getImage();
-        if (image == null) {
+        Image resolved = getImage();
+        if (resolved == null) {
             throw new IllegalStateException(this.getClass().getName() + " has no image!");
         }
-        drawImage(gc, image, locationX, locationY, rotation + initRotation, scale);
-
-        // 绘制出碰撞箱边框
-//        hitBox.render(gc);
+        drawImage(gc, resolved, locationX, locationY, rotation + INIT_ANGLE, scale);
     }
 
     /**
@@ -238,7 +231,7 @@ public abstract class AbstractFlyingObject {
 
         double distance = Math.hypot(dx, dy);
 
-        if (distance < 1 || maxSpeed == Double.POSITIVE_INFINITY) { //已到达目标点 或 无速度限制，直接设置位置
+        if (distance < 1 || maxSpeed == Double.POSITIVE_INFINITY) {
             locationX = targetX;
             locationY = targetY;
             speedX = 0;
@@ -246,16 +239,13 @@ public abstract class AbstractFlyingObject {
             return true;
         }
 
-        // 靠近目标点时速度逐渐降低，避免过冲
         if (distance < maxSpeed * 0.5) {
             maxSpeed = distance * 0.5;
         }
 
-        // 目标速度
         double targetSpeedX = dx / distance * maxSpeed;
         double targetSpeedY = dy / distance * maxSpeed;
 
-        // 当前速度逐渐逼近目标速度
         speedX = speedX * inertia + targetSpeedX * (1.0 - inertia);
         speedY = speedY * inertia + targetSpeedY * (1.0 - inertia);
         this.locationX += speedX;
@@ -282,11 +272,11 @@ public abstract class AbstractFlyingObject {
 
         double targetRotation = Math.toDegrees(Math.atan2(dy, dx)) + 90.0;
 
-        if (maxOmega == Double.POSITIVE_INFINITY) { // 无旋转限制，直接设置角度
+        if (maxOmega == Double.POSITIVE_INFINITY) {
             this.rotation = targetRotation;
             return;
         }
-        double targetOmega = normalizeAngle(targetRotation - this.rotation) * 0.1; // Proportional control
+        double targetOmega = normalizeAngle(targetRotation - this.rotation) * 0.1;
         if (targetOmega > maxOmega) {
             targetOmega = maxOmega;
         } else if (targetOmega < -maxOmega) {
@@ -300,5 +290,4 @@ public abstract class AbstractFlyingObject {
     private double normalizeAngle(double angle) {
         return angle - 360.0 * Math.floor((angle + 180.0) / 360.0);
     }
-
 }

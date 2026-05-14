@@ -17,6 +17,7 @@ public class Main extends Application {
 
     public static final int WINDOW_WIDTH = 512;
     public static final int WINDOW_HEIGHT = 768;
+
     public static void main(String[] args) {
         System.out.println("Aircraft War Start!");
         launch(args);

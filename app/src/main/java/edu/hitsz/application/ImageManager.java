@@ -2,6 +2,8 @@ package edu.hitsz.application;
 
 import edu.hitsz.aircraft.HeroAircraft;
 import edu.hitsz.aircraft.enemy.*;
+import edu.hitsz.aircraft.enemy.exotwins.ApolloEnemy;
+import edu.hitsz.aircraft.enemy.exotwins.ArtemisEnemy;
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
 import edu.hitsz.prop.*;
@@ -42,11 +44,24 @@ public class ImageManager {
     public static Image ELITE_PRO_ENEMY_IMAGE;
     public static Image BOSS_ENEMY_IMAGE;
 
+    public static Image APOLLO_IMAGE;
+    public static Image ARTEMIS_IMAGE;
+    public static Image APOLLP_GLOW_IMAGE;
+    public static Image ARTEMIS_GLOW_IMAGE;
+    public static Image ARTEMIS_LASER_IMAGE;
+    public static Image APOLLO_FIREBALL_IMAGE;
+    public static Image EXO_MUZZLE_BLOOM_IMAGE;
+    public static Image EXO_MUZZLE_FLARE_IMAGE;
+
     public static Image PROP_BLOOD_IMAGE;
     public static Image PROP_BOMB_IMAGE;
     public static Image PROP_BULLET_IMAGE;
     public static Image PROP_BULLET_PLUS_IMAGE;
     public static Image PROP_FREEZE_IMAGE;
+
+    public static Image CLOUD_DENSITY_MAP;
+    public static Image TECHY_NOISE;
+    public static Image WAVY_BLOTCH_NOISE;
 
     static {
         try {
@@ -72,6 +87,19 @@ public class ImageManager {
             PROP_BULLET_PLUS_IMAGE = loadFromResources("/images/prop_bulletPlus.png");
             PROP_FREEZE_IMAGE = loadFromResources("/images/prop_freeze.png");
 
+            APOLLO_IMAGE = loadFromResources("/images/Apollo.png");
+            APOLLP_GLOW_IMAGE = loadFromResources("/images/ApolloGlow.png");
+            ARTEMIS_IMAGE = loadFromResources("/images/Artemis.png");
+            ARTEMIS_GLOW_IMAGE = loadFromResources("/images/ArtemisGlow.png");
+            ARTEMIS_LASER_IMAGE = loadFromResources("/images/ArtemisLaser.png");
+            APOLLO_FIREBALL_IMAGE = loadFromResources("/images/ApolloFireball.png");
+            EXO_MUZZLE_BLOOM_IMAGE = loadFromResources("/images/ExoMuzzleBloom.png");
+            EXO_MUZZLE_FLARE_IMAGE = loadFromResources("/images/ExoMuzzleFlare.png");
+
+            CLOUD_DENSITY_MAP = loadFromResources("/textures/CloudDensityMap.png");
+            TECHY_NOISE = loadFromResources("/textures/TechyNoise.png");
+            WAVY_BLOTCH_NOISE = loadFromResources("/textures/WavyBlotchNoise.png");
+
             CLASSNAME_IMAGE_MAP.put(HeroAircraft.class.getName(), HERO_IMAGE);
             CLASSNAME_IMAGE_MAP.put(MobEnemy.class.getName(), MOB_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(HeroBullet.class.getName(), HERO_BULLET_IMAGE);
@@ -80,6 +108,8 @@ public class ImageManager {
             CLASSNAME_IMAGE_MAP.put(ElitePlusEnemy.class.getName(), ELITE_PLUS_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(EliteProEnemy.class.getName(), ELITE_PRO_ENEMY_IMAGE);
             CLASSNAME_IMAGE_MAP.put(BossEnemy.class.getName(), BOSS_ENEMY_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(ApolloEnemy.class.getName(), APOLLO_IMAGE);
+            CLASSNAME_IMAGE_MAP.put(ArtemisEnemy.class.getName(), ARTEMIS_IMAGE);
 
             CLASSNAME_IMAGE_MAP.put(BloodProp.class.getName(), PROP_BLOOD_IMAGE);
             CLASSNAME_IMAGE_MAP.put(BombProp.class.getName(), PROP_BOMB_IMAGE);
@@ -102,6 +132,23 @@ public class ImageManager {
             return null;
         }
         return get(obj.getClass().getName());
+    }
+
+    public static Image getSpriteSheet(String name) {
+        if (name == null) {
+            return null;
+        }
+        return switch (name.toLowerCase()) {
+            case "apollo" -> APOLLO_IMAGE;
+            case "artemis" -> ARTEMIS_IMAGE;
+            case "apollo_glow" -> APOLLP_GLOW_IMAGE;
+            case "artemis_glow" -> ARTEMIS_GLOW_IMAGE;
+            case "artemis_laser" -> ARTEMIS_LASER_IMAGE;
+            case "apollo_fireball" -> APOLLO_FIREBALL_IMAGE;
+            case "exo_muzzle_bloom" -> EXO_MUZZLE_BLOOM_IMAGE;
+            case "exo_muzzle_flare" -> EXO_MUZZLE_FLARE_IMAGE;
+            default -> null;
+        };
     }
 
     private static Image loadFromResources(String resourcePath) throws IOException {

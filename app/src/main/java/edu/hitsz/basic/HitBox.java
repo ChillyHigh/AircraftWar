@@ -1,51 +1,39 @@
 package edu.hitsz.basic;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
-public class HitBox {
-    private final double offsetX;
-    private final double offsetY;
-    private final double halfWidth;
-    private final double halfHeight;
-    private final AbstractFlyingObject owner;
+public abstract class HitBox {
+    protected final AbstractFlyingObject owner;
+    protected double offsetX;
+    protected double offsetY;
 
-    public HitBox(double offsetX, double offsetY, double width, double height, AbstractFlyingObject owner) {
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
-        this.halfWidth = width / 2.0;
-        this.halfHeight = height / 2.0;
+    protected HitBox(AbstractFlyingObject owner, double offsetX, double offsetY, double scale) {
         this.owner = owner;
+        this.offsetX = offsetX * scale;
+        this.offsetY = offsetY * scale;
     }
 
-    public boolean isCollidingWith(HitBox other) {
-        return getLeft(this) <= other.getRight(other)
-                && getRight(this) >= other.getLeft(other)
-                && getTop(this) <= other.getBottom(other)
-                && getBottom(this) >= other.getTop(other);
+    public final boolean isCollidingWith(HitBox other) {
+        if (other instanceof RectHitBox rect) {
+            return collideWithRect(rect);
+        }
+        if (other instanceof CapsuleHitBox capsule) {
+            return collideWithCapsule(capsule);
+        }
+        throw new IllegalStateException("Unsupported hit box type: " + other.getClass().getName());
     }
 
-    private double getLeft(HitBox hitBox) {
-        return hitBox.owner.getLocationX() + hitBox.offsetX - hitBox.halfWidth;
+    protected abstract boolean collideWithRect(RectHitBox rect);
+
+    protected abstract boolean collideWithCapsule(CapsuleHitBox capsule);
+
+    public abstract void render(GraphicsContext gc);
+
+    protected double ownerX() {
+        return owner.getLocationX();
     }
 
-    private double getRight(HitBox hitBox) {
-        return hitBox.owner.getLocationX() + hitBox.offsetX + hitBox.halfWidth;
-    }
-
-    private double getTop(HitBox hitBox) {
-        return hitBox.owner.getLocationY() + hitBox.offsetY - hitBox.halfHeight;
-    }
-
-    private double getBottom(HitBox hitBox) {
-        return hitBox.owner.getLocationY() + hitBox.offsetY + hitBox.halfHeight;
-    }
-
-    public void render(GraphicsContext gc) {
-        gc.save();
-        gc.translate(owner.getLocationX(), owner.getLocationY());
-        gc.setStroke(Color.WHITE);
-        gc.strokeRect(-halfWidth, -halfHeight, halfWidth * 2.0, halfHeight * 2.0);
-        gc.restore();
+    protected double ownerY() {
+        return owner.getLocationY();
     }
 }

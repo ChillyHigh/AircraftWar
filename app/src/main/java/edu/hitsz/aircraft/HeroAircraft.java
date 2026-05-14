@@ -2,6 +2,10 @@ package edu.hitsz.aircraft;
 
 import edu.hitsz.application.ImageManager;
 import edu.hitsz.application.Main;
+import edu.hitsz.aircraft.enemy.exotwins.ApolloEnemy;
+import edu.hitsz.aircraft.enemy.exotwins.ArtemisEnemy;
+import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.strategy.ShootStrategy;
 import edu.hitsz.strategy.StraightShootStrategy;
@@ -62,6 +66,33 @@ public class HeroAircraft extends AbstractAircraft {
 
     public void increaseHp(int increase) {
         hp = Math.min(hp + increase, maxHp);
+    }
+
+    @Override
+    public void onCollide(AbstractFlyingObject other) {
+        if (other instanceof EnemyBullet enemyBullet) {
+            decreaseHp(enemyBullet.getPower());
+            return;
+        }
+        if (other instanceof BaseBullet baseBullet) {
+            decreaseHp(baseBullet.getPower());
+            return;
+        }
+        if (other instanceof ApolloEnemy apolloEnemy) {
+            if (apolloEnemy.canDealContactDamage()) {
+                decreaseHp(apolloEnemy.getDashContactDamage());
+            }
+            return;
+        }
+        if (other instanceof ArtemisEnemy artemisEnemy) {
+            if (artemisEnemy.canDealContactDamage()) {
+                decreaseHp(artemisEnemy.getDashContactDamage());
+            }
+            return;
+        }
+        if (other instanceof AbstractEnemy) {
+            decreaseHp(Integer.MAX_VALUE);
+        }
     }
 
     @Override

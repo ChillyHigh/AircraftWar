@@ -1,0 +1,90 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class HitBox {
+    # owner: AbstractFlyingObject
+    # offsetX: double
+    # offsetY: double
+    + isCollidingWith(other: HitBox): boolean
+    # {abstract} collideWithRect(rect: RectHitBox): boolean
+    # {abstract} collideWithCapsule(capsule: CapsuleHitBox): boolean
+    + {abstract} render(gc: GraphicsContext): void
+    # ownerX(): double
+    # ownerY(): double
+}
+
+class RectHitBox {
+    - halfWidth: double
+    - halfHeight: double
+    + getCenterX(): double
+    + getCenterY(): double
+    + getLeft(): double
+    + getRight(): double
+    + getTop(): double
+    + getBottom(): double
+}
+
+class CapsuleHitBox {
+    - length: double
+    - radius: double
+    - angleDegrees: double
+    + setLocalOffset(offsetX: double, offsetY: double): void
+    + setLength(length: double): void
+    + setRadius(radius: double): void
+    + setAngleDegrees(angleDegrees: double): void
+    - segmentEndpoints(): double[][]
+}
+
+abstract class AbstractFlyingObject {
+    # locationX: double
+    # locationY: double
+    # speedX: double
+    # speedY: double
+    # scale: double
+    # rotation: double
+    # omega: double
+    # hitBox: HitBox
+    + collidesWith(flyingObject: AbstractFlyingObject): boolean
+    + onCollide(other: AbstractFlyingObject): void
+    + getHitBox(): HitBox
+    # createDefaultHitBox(): HitBox
+    # setHitBox(hitBox: HitBox): void
+    + moveToward(targetX: double, targetY: double, maxSpeed: double, inertia: double): boolean
+    + rotateToward(targetX: double, targetY: double, maxOmega: double, inertia: double): void
+}
+
+class AbstractAircraft {
+    + onCollide(other: AbstractFlyingObject): void
+}
+
+class AbstractEnemy {
+    + onCollide(other: AbstractFlyingObject): void
+}
+
+class ApolloEnemy {
+    + onCollide(other: AbstractFlyingObject): void
+}
+
+class ArtemisEnemy {
+    + onCollide(other: AbstractFlyingObject): void
+}
+
+class EnemyBullet {
+    + onCollide(other: AbstractFlyingObject): void
+}
+
+HitBox <|-- RectHitBox
+HitBox <|-- CapsuleHitBox
+AbstractFlyingObject o--> HitBox
+AbstractFlyingObject <|-- AbstractAircraft
+AbstractFlyingObject <|-- EnemyBullet
+AbstractAircraft <|-- AbstractEnemy
+AbstractEnemy <|-- ApolloEnemy
+AbstractEnemy <|-- ArtemisEnemy
+
+note bottom of AbstractFlyingObject
+  onCollide() 为碰撞回调钩子,
+  子类重写以定义各自的碰撞响应行为
+end note
+
+@enduml

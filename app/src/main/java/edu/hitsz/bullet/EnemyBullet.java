@@ -1,5 +1,7 @@
 package edu.hitsz.bullet;
 
+import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.observer.PropObserver;
 import edu.hitsz.thread.TimeOutThread;
 
@@ -16,12 +18,19 @@ public class EnemyBullet extends BaseBullet implements PropObserver {
 
     public EnemyBullet(double locationX, double locationY, double speedX, double speedY, int power, double angle) {
         super(locationX, locationY, speedX, speedY, power, angle);
-        this.initRotation = 180.0;
+        this.INIT_ANGLE = 180.0;
     }
 
     @Override
     public void onBomb() {
         vanish();
+    }
+
+    @Override
+    public void onCollide(AbstractFlyingObject other) {
+        if (other instanceof HeroAircraft) {
+            vanish();
+        }
     }
 
     @Override

@@ -3,18 +3,23 @@ package edu.hitsz.application.game;
 import edu.hitsz.aircraft.AbstractAircraft;
 import edu.hitsz.aircraft.AbstractEnemy;
 import edu.hitsz.aircraft.HeroAircraft;
-import edu.hitsz.aircraft.enemy.BossEnemy;
 import edu.hitsz.application.AudioManager;
 import edu.hitsz.application.HeroController;
 import edu.hitsz.application.Main;
+import edu.hitsz.application.WindowShaker;
 import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
-import edu.hitsz.factory.*;
+import edu.hitsz.factory.BossEnemyFactory;
+import edu.hitsz.factory.EliteEnemyFactory;
+import edu.hitsz.factory.ElitePlusEnemyFactory;
+import edu.hitsz.factory.EliteProEnemyFactory;
+import edu.hitsz.factory.EnemyFactory;
+import edu.hitsz.factory.MobEnemyFactory;
 import edu.hitsz.fxml.rankPageCtrl;
+import edu.hitsz.observer.PropSubject;
 import edu.hitsz.prop.BaseProp;
 import edu.hitsz.prop.BombProp;
-import edu.hitsz.prop.FreezeProp;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,7 +47,7 @@ public abstract class AbstractGame extends Pane {
     private int backGroundTop = 0;
 
     // 游戏逻辑更新间隔
-    private int timeInterval = 20;
+    private final int timeInterval = 20;
 
     private final HeroAircraft heroAircraft;
     protected final List<AbstractEnemy> enemyAircrafts;
@@ -51,7 +56,7 @@ public abstract class AbstractGame extends Pane {
     private final List<BaseBullet> enemyBullets;
     private final List<BaseProp> props;
 
-    private Image backgroundImage;
+    private final Image backgroundImage;
 
     // 屏幕中出现的敌机最大数量
     protected int enemyMaxNumber = 5;
@@ -75,7 +80,6 @@ public abstract class AbstractGame extends Pane {
 
     // 游戏结束标志
     private boolean gameOverFlag = false;
-    private boolean bossBgmPlaying = false;
 
     // 画布和画笔
     private final Canvas canvas;
@@ -104,14 +108,14 @@ public abstract class AbstractGame extends Pane {
                 new MobEnemyFactory(),
                 new EliteEnemyFactory(),
                 new ElitePlusEnemyFactory(),
-                new EliteProEnemyFactory());
+                new EliteProEnemyFactory()
+        );
         heroBullets = new LinkedList<>();
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
 
         // 启动英雄机鼠标监听（移动/拖拽即跟随）
         new HeroController(this, heroAircraft);
-
     }
 
     /**
@@ -150,13 +154,11 @@ public abstract class AbstractGame extends Pane {
             }
         };
         timer.start();
-
     }
 
     private void tick() {
         updateDifficulty();
         spawnEnemy();
-        updateBossBgm();
         spawnBoss();
 
         // 飞机射出子弹
@@ -171,7 +173,6 @@ public abstract class AbstractGame extends Pane {
         crashCheckAction();
         // 后处理
         postProcessAction();
-        updateBossBgm();
         // 游戏结束检查
         checkResultAction();
     }
@@ -189,7 +190,6 @@ public abstract class AbstractGame extends Pane {
 
     protected abstract String getDifficultyName();
 
-
     /**
      * 应用敌机工厂的倍率设置
      */
@@ -206,7 +206,14 @@ public abstract class AbstractGame extends Pane {
         return enemyFactories.get(1 + (int) (Math.random() * (enemyFactories.size() - 1)));
     }
 
-    protected void upgradeEnemyDifficulty(double eliteRateStep, double spawnCycleStep, double hpRateStep, double speedRateStep) {
+    protected BossEnemyFactory createBossEnemyFactory() {
+        BossEnemyFactory bossEnemyFactory = new BossEnemyFactory();
+        bossEnemyFactory.setRates(bossHpRate, enemySpeedRate);
+        return bossEnemyFactory;
+    }
+
+    protected void upgradeEnemyDifficulty(double eliteRateStep, double spawnCycleStep, double hpRateStep,
+                                          double speedRateStep) {
         eliteEnemyRate = Math.min(0.95, eliteEnemyRate + eliteRateStep);
         enemySpawnCycle = Math.max(6.0, enemySpawnCycle - spawnCycleStep);
         enemyHpRate += hpRateStep;
@@ -214,17 +221,33 @@ public abstract class AbstractGame extends Pane {
         applyEnemyFactoryRates();
     }
 
-    protected BossEnemyFactory createBossEnemyFactory() {
-        BossEnemyFactory bossEnemyFactory = new BossEnemyFactory();
-        bossEnemyFactory.setRates(bossHpRate, enemySpeedRate);
-        return bossEnemyFactory;
+    protected List<AbstractEnemy> getEnemyAircrafts() {
+        return enemyAircrafts;
     }
 
+    /**
+     * 用于绘制背景层，子类可覆写以接入动态云层等效果
+     */
+    protected void renderBackgroundLayer(GraphicsContext gc) {
+        gc.drawImage(backgroundImage, 0, this.backGroundTop - Main.WINDOW_HEIGHT);
+        gc.drawImage(backgroundImage, 0, this.backGroundTop);
+        this.backGroundTop += 1;
+        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
+            this.backGroundTop = 0;
+        }
+    }
+
+    protected void renderForegroundLayer(GraphicsContext gc) {
+    }
 
     // ***********************
     // Action 各部分
     // ***********************
     private void shootAction() {
+        for (AbstractEnemy enemyAircraft : enemyAircrafts) {
+            enemyBullets.addAll(enemyAircraft.getBullets());
+        }
+
         enemyShootCounter++;
         if (enemyShootCounter >= enemyShootCycle) {
             enemyShootCounter = 0;
@@ -274,11 +297,9 @@ public abstract class AbstractGame extends Pane {
             if (bullet.notValid()) {
                 continue;
             }
-            if (heroAircraft.crash(bullet)) {
-                // 英雄机撞击到敌机子弹
-                // 英雄机损失一定生命值
-                heroAircraft.decreaseHp(bullet.getPower());
-                bullet.vanish();
+            if (bullet.collidesWith(heroAircraft)) {
+                bullet.onCollide(heroAircraft);
+                heroAircraft.onCollide(bullet);
             }
         }
 
@@ -289,65 +310,70 @@ public abstract class AbstractGame extends Pane {
             }
             for (AbstractEnemy enemyAircraft : enemyAircrafts) {
                 if (enemyAircraft.notValid()) {
-                    // 已被其他子弹击毁的敌机，不再检测
-                    // 避免多个子弹重复击毁同一敌机的判定
                     continue;
                 }
-                if (enemyAircraft.crash(bullet)) {
-                    // 敌机撞击到英雄机子弹
-                    // 敌机损失一定生命值
-                    AudioManager.playSound(AudioManager.BULLET_HIT);
-                    enemyAircraft.decreaseHp(bullet.getPower());
-                    bullet.vanish();
+                if (bullet.collidesWith(enemyAircraft)) {
+                    bullet.onCollide(enemyAircraft);
+                    enemyAircraft.onCollide(bullet);
                     if (enemyAircraft.notValid()) {
                         score += enemyAircraft.getScore();
                         props.addAll(enemyAircraft.dropProp());
                     }
-                }
-                // 英雄机 与 敌机 相撞，均损毁
-                if (enemyAircraft.crash(heroAircraft) || heroAircraft.crash(enemyAircraft)) {
-                    enemyAircraft.vanish();
-                    heroAircraft.decreaseHp(Integer.MAX_VALUE);
+                    if (bullet.notValid()) {
+                        break;
+                    }
                 }
             }
         }
 
+        // 英雄机 与 敌机 相撞
+        for (AbstractEnemy enemyAircraft : enemyAircrafts) {
+            if (enemyAircraft.notValid()) {
+                continue;
+            }
+            if (enemyAircraft.collidesWith(heroAircraft)) {
+                enemyAircraft.onCollide(heroAircraft);
+                heroAircraft.onCollide(enemyAircraft);
+            }
+        }
+
+        // 英雄获得补给
         for (BaseProp prop : props) {
             if (prop.notValid()) {
                 continue;
             }
-            if (heroAircraft.crash(prop)) {
-                if (prop instanceof BombProp bombProp) {
+            if (heroAircraft.collidesWith(prop)) {
+                List<AbstractEnemy> bombTargets = null;
+                if (prop instanceof BombProp) {
+                    bombTargets = new LinkedList<>();
+                }
+                if (prop instanceof PropSubject propSubject) {
                     for (AbstractEnemy enemyAircraft : enemyAircrafts) {
                         if (!enemyAircraft.notValid()) {
-                            bombProp.addObserver(enemyAircraft);
+                            if (bombTargets != null) {
+                                bombTargets.add(enemyAircraft);
+                            }
+                            propSubject.addObserver(enemyAircraft);
                         }
                     }
                     for (BaseBullet bullet : enemyBullets) {
                         if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
-                            bombProp.addObserver(enemyBullet);
-                        }
-                    }
-                } else if (prop instanceof FreezeProp freezeProp) {
-                    for (AbstractEnemy enemyAircraft : enemyAircrafts) {
-                        if (!enemyAircraft.notValid()) {
-                            freezeProp.addObserver(enemyAircraft);
-                        }
-                    }
-                    for (BaseBullet bullet : enemyBullets) {
-                        if (!bullet.notValid() && bullet instanceof EnemyBullet enemyBullet) {
-                            freezeProp.addObserver(enemyBullet);
+                            propSubject.addObserver(enemyBullet);
                         }
                     }
                 }
-                // 英雄机撞击到道具
-                // 道具生效
                 AudioManager.playSound(AudioManager.GET_SUPPLY);
                 prop.activate();
+                if (bombTargets != null) {
+                    for (AbstractEnemy enemyAircraft : bombTargets) {
+                        if (enemyAircraft.notValid()) {
+                            score += enemyAircraft.getScore();
+                        }
+                    }
+                }
                 prop.vanish();
             }
         }
-
     }
 
     /**
@@ -369,69 +395,52 @@ public abstract class AbstractGame extends Pane {
     private void checkResultAction() {
         // 游戏结束检查英雄机是否存活
         if (heroAircraft.getHp() <= 0) {
-            gameOverFlag = true;
-            System.out.println("Game Over!");
-            AudioManager.stopBGM();
+            finishGame(true);
+        }
+    }
+
+    protected void finishGame(boolean playGameOverSound) {
+        if (gameOverFlag) {
+            return;
+        }
+        gameOverFlag = true;
+        System.out.println("Game Over!");
+        AudioManager.stopBGM();
+        if (playGameOverSound) {
             AudioManager.playSound(AudioManager.GAME_OVER);
-            // 游戏结束，切换到排名页面
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));
-                Parent root = loader.load();
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/rankPage.fxml"));
+            Parent root = loader.load();
 
-                rankPageCtrl controller = loader.getController();
-                controller.setCurrentScore(score, getDifficultyName());
+            rankPageCtrl controller = loader.getController();
+            controller.setCurrentScore(score, getDifficultyName());
 
-                Stage stage = (Stage) getScene().getWindow();
-                stage.setScene(new Scene(root, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Stage stage = (Stage) getScene().getWindow();
+            stage.setScene(new Scene(root, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
-    private void updateBossBgm() {
-        boolean hasBossAlive = false;
-        for (AbstractEnemy enemyAircraft : enemyAircrafts) {
-            if (!enemyAircraft.notValid() && enemyAircraft instanceof BossEnemy) {
-                hasBossAlive = true;
-                break;
-            }
-        }
-        if (hasBossAlive && !bossBgmPlaying) {
-            AudioManager.playBGM(AudioManager.BGM_BOSS);
-            bossBgmPlaying = true;
-        } else if (!hasBossAlive && bossBgmPlaying) {
-            AudioManager.playBGM(AudioManager.BGM);
-            bossBgmPlaying = false;
-        }
-    }
-
-    ;
 
     // ***********************
     // Render 各部分
     // ***********************
-
     private void render() {
-        // 背景滚动
         gc.clearRect(0, 0, Main.WINDOW_WIDTH, Main.WINDOW_HEIGHT);
+        WindowShaker.updateScreenShake();
+        gc.save();
+        gc.translate(WindowShaker.getShakeOffsetX(), WindowShaker.getShakeOffsetY());
 
-        gc.drawImage(backgroundImage, 0, this.backGroundTop - Main.WINDOW_HEIGHT);
-        gc.drawImage(backgroundImage, 0, this.backGroundTop);
-        this.backGroundTop += 1;
-        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
-            this.backGroundTop = 0;
-        }
-
-        // 先绘制子弹，后绘制飞机
+        renderBackgroundLayer(gc);
         renderObjects(enemyBullets);
         renderObjects(heroBullets);
         renderObjects(enemyAircrafts);
-
         renderObjects(props);
-        // 绘制英雄机
         heroAircraft.render(gc);
+        renderForegroundLayer(gc);
 
+        gc.restore();
         paintScoreAndLife();
     }
 
@@ -451,8 +460,7 @@ public abstract class AbstractGame extends Pane {
         gc.setFill(Color.rgb(255, 0, 0));
         gc.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
         gc.fillText("SCORE:" + this.score, x, y);
-        y = y + 20;
+        y += 20;
         gc.fillText("LIFE:" + this.heroAircraft.getHp(), x, y);
     }
-
 }

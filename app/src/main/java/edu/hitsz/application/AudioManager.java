@@ -16,7 +16,14 @@ public class AudioManager {
     public static final String BOMB_EXPLOSION = "/videos/bomb_explosion.wav";
     public static final String GET_SUPPLY = "/videos/get_supply.wav";
     public static final String GAME_OVER = "/videos/game_over.wav";
-    public static final String LASER_CANNON = "/extraSounds/Splatshot.wav";
+    public static final String EXO_TWINS_DASH_TELEGRAPH = "/extraSounds/ArtemisApolloDashTelegraph.wav";
+    public static final String EXO_TWINS_DASH = "/extraSounds/ArtemisApolloDash.wav";
+    public static final String EXO_LASER_SHOOT = "/extraSounds/ExoLaserShoot.wav";
+    public static final String ARTEMIS_SPIN_LASERBEAM = "/extraSounds/ArtemisSpinLaserbeam.wav";
+    public static final String EXO_TWINS_BGM = "/extraSounds/ExoTwinsBoss.wav";
+    public static final String EXO_TWINS_WARNING_BEEP_1 = "/extraSounds/WarningBeep1.wav";
+    public static final String EXO_TWINS_WARNING_BEEP_2 = "/extraSounds/WarningBeep2.wav";
+    public static final String EXO_TWINS_DEATH_COLLISION = "/extraSounds/DeathAnimationCollision.wav";
 
     /**
      * 播放背景音乐，循环播放<br>

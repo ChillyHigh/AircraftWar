@@ -35,6 +35,8 @@
                 <Button fx:id="normalButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectNormal" prefHeight="92.0" styleClass="buttons" text="普通" textFill="WHITE" wrapText="true" />
 
                 <Button fx:id="hardButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectHard" prefHeight="92.0" styleClass="buttons" text="困难" textFill="WHITE" wrapText="true" />
+
+                <Button fx:id="infernumButton" alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectInfernum" prefHeight="92.0" styleClass="buttons" text="炼狱" textFill="WHITE" wrapText="true" />
             <VBox.margin>
                <Insets top="40.0" />
             </VBox.margin>

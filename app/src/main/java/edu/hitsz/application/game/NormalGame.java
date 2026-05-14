@@ -1,6 +1,8 @@
 package edu.hitsz.application.game;
 
+import edu.hitsz.application.AudioManager;
 import edu.hitsz.application.ImageManager;
+import edu.hitsz.aircraft.enemy.BossEnemy;
 public class NormalGame extends AbstractGame {
 
     private int enemySpawnCounter;
@@ -11,6 +13,7 @@ public class NormalGame extends AbstractGame {
 
     // 上次召唤BOSS时的分数
     private int lastBossScore = 0;
+    private boolean bossBgmPlaying = false;
 
     public NormalGame() {
         super(ImageManager.BACKGROUND_IMAGE_2);
@@ -57,6 +60,12 @@ public class NormalGame extends AbstractGame {
         if (score - lastBossScore >= BOSS_SCORE_INTERVAL) {
             enemyAircrafts.add(createBossEnemyFactory().createEnemy());
             lastBossScore = score;
+            bossBgmPlaying = true;
+            AudioManager.playBGM(AudioManager.BGM_BOSS);
+        }
+        if (bossBgmPlaying && enemyAircrafts.stream().noneMatch(enemy -> enemy instanceof BossEnemy)) {
+            bossBgmPlaying = false;
+            AudioManager.playBGM(AudioManager.BGM);
         }
     }
 
