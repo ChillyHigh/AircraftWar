@@ -1,0 +1,103 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class ExoTwinsState {
+    # hero: HeroAircraft
+    # stateTimer: int
+    + {abstract} update(manager: ExoTwinsManager): void
+}
+
+class ExoTwinsDashState {
+    - completedLoops: int
+    - orbitAngle: double
+    + update(manager: ExoTwinsManager): void
+    - updateEnterSide(manager): void
+    - updateOrbit(manager): void
+    - updateDashPrepare(manager): void
+    - updateDashing(manager): void
+    - updateReturnSide(manager): void
+}
+
+class ExoTwinsMachineGunLasersState {
+    + update(manager: ExoTwinsManager): void
+}
+
+class ExoTwinsOverloadState {
+    + update(manager: ExoTwinsManager): void
+}
+
+class ExoTwinsDeathState {
+    - collisionX: double
+    - collisionY: double
+    + update(manager: ExoTwinsManager): void
+    - updateMoveNearHero(apollo, artemis): void
+    - updateReorient(apollo, artemis): void
+    - updateDashChargeUp(apollo, artemis): void
+    - updateDash(apollo, artemis): void
+    - updateCollisionAndExplode(manager, apollo, artemis): void
+}
+
+class ExoTwinsManager {
+    - state: ExoTwinsState
+    - apollo: ApolloEnemy
+    - artemis: ArtemisEnemy
+    - sharedHp: int
+    - maxSharedHp: int
+    - phase: int
+    - deathAnimationActive: boolean
+    - battleFinished: boolean
+    + update(): void
+    + applyDamage(damage: int): void
+    + changeState(next: ExoTwinsState): void
+    + advanceCycle(): void
+    + triggerDeathExplosion(): void
+    + finishBattle(): void
+    + isDefeated(): boolean
+    + getSharedHp(): int
+    + getPhase(): int
+    - syncSharedHp(): void
+    - nextPattern(): AttackPattern
+    - createState(pattern: AttackPattern): ExoTwinsState
+}
+
+class ApolloEnemy {
+    - contactDamageEnabled: boolean
+    - dashMode: boolean
+    - deathAnimationMode: boolean
+    - sharedHp: int
+    + setDesiredState(...): void
+    + setDashVelocity(vx, vy): void
+    + setState(state: int): void
+    + beginDeathAnimation(): void
+    + canDealContactDamage(): boolean
+}
+
+class ArtemisEnemy {
+    - contactDamageEnabled: boolean
+    - dashMode: boolean
+    - deathAnimationMode: boolean
+    - sharedHp: int
+    + setDesiredState(...): void
+    + setDashVelocity(vx, vy): void
+    + setState(state: int): void
+    + beginDeathAnimation(): void
+    + setExothermalChargeUpEffect(progress): void
+    + setExothermalGleamEffect(progress): void
+}
+
+ExoTwinsState <|-- ExoTwinsDashState
+ExoTwinsState <|-- ExoTwinsMachineGunLasersState
+ExoTwinsState <|-- ExoTwinsOverloadState
+ExoTwinsState <|-- ExoTwinsDeathState
+
+ExoTwinsManager o--> ExoTwinsState
+ExoTwinsManager o--> ApolloEnemy
+ExoTwinsManager o--> ArtemisEnemy
+
+note top of ExoTwinsManager
+  共享血量 + 两阶段战斗
+  一阶段 (血量>50%): Dash + MachineGunLasers
+  二阶段 (血量≤50%): + OverloadRay
+end note
+
+@enduml

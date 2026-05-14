@@ -56,7 +56,7 @@ BaseProp <|-- BulletPlusProp
 BaseProp <|-- BombProp
 BaseProp <|-- FreezeProp
 
-AbstractEnemy o--> PropFactory
+AbstractEnemy ..> PropFactory
 PropFactory ..> BloodProp
 PropFactory ..> BulletProp
 PropFactory ..> BulletPlusProp
